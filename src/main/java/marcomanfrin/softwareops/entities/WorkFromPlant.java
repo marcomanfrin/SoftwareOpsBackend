@@ -10,4 +10,8 @@ public class WorkFromPlant extends Work {
 
     @ManyToOne
     private Plant plant;
+
+    public void setPlant(Plant plant) {
+        this.plant = plant;
+    }
 }

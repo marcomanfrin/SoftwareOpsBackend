@@ -1,12 +1,13 @@
 package marcomanfrin.softwareops.repositories;
 
 import marcomanfrin.softwareops.entities.Task;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface TaskRepository extends JpaRepository<@NonNull Task, @NonNull UUID> {
+public interface TaskRepository extends JpaRepository<Task, UUID> {
+    List<Task> findByWorkId(UUID workId);
 }

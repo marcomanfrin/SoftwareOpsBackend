@@ -24,4 +24,20 @@ public class WorkReportEntry {
     private Task task;
 
     private BigDecimal hours;
+
+    public void setReport(WorkReport report) {
+        this.report = report;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
+
+    public void setHours(BigDecimal hours) {
+        this.hours = hours;
+    }
+
+    public BigDecimal getHours() {
+        return hours;
+    }
 }

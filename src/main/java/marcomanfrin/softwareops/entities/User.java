@@ -22,4 +22,32 @@ public abstract class User {
     private String ProfileImageUrl;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        ProfileImageUrl = profileImageUrl;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
 }

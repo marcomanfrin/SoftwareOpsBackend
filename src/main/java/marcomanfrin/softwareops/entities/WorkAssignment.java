@@ -24,4 +24,20 @@ public class WorkAssignment {
 
     @Enumerated(EnumType.STRING)
     private AssignmentRole assignmentRole;
+
+    public void setWork(Work work) {
+        this.work = work;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public void setAssignmentRole(AssignmentRole assignmentRole) {
+        this.assignmentRole = assignmentRole;
+    }
 }

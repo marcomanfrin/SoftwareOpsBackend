@@ -28,4 +28,28 @@ public class WorkReport {
     private boolean invoiced;
     private LocalDateTime invoicedAt;
     private LocalDateTime createdAt;
+
+    public void setWork(Work work) {
+        this.work = work;
+    }
+
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
+
+    public void setTotalHours(BigDecimal totalHours) {
+        this.totalHours = totalHours;
+    }
+
+    public void setInvoiced(boolean invoiced) {
+        this.invoiced = invoiced;
+    }
+
+    public void setInvoicedAt(LocalDateTime invoicedAt) {
+        this.invoicedAt = invoicedAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

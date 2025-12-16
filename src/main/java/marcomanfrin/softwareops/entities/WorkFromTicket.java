@@ -11,4 +11,7 @@ public class WorkFromTicket extends Work {
     @ManyToOne
     private Ticket ticket;
 
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
 }
