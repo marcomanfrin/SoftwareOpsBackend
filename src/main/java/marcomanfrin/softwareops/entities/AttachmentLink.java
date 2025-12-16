@@ -10,6 +10,7 @@ import java.util.UUID;
 public class AttachmentLink {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     @ManyToOne

@@ -10,6 +10,7 @@ import java.util.UUID;
 public abstract class Work {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     private int progressPercent;

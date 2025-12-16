@@ -10,6 +10,7 @@ import java.util.UUID;
 public class Client {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     private String name;

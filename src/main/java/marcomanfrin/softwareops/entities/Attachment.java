@@ -11,6 +11,7 @@ import java.util.UUID;
 public class Attachment {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     private String url;

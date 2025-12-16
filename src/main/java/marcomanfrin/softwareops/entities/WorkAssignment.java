@@ -11,6 +11,7 @@ import java.util.UUID;
 public class WorkAssignment {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     @ManyToOne

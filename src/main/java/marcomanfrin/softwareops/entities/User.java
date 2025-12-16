@@ -11,6 +11,7 @@ import java.util.UUID;
 public abstract class User {
 
     @Id
+    @GeneratedValue
     private UUID id;
 
     private String username;
