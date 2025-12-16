@@ -14,4 +14,11 @@ public interface IUserService {
     User updateUser(UUID id, String firstName, String surname, String profileImageUrl);
     void deleteUser(UUID id);
     User changeUserRole(UUID id, UserRole role);
+
+    // to implement:
+    // updateProfileImage(UUID userId, MultipartFile file)
+    // changePassword(UUID userId, ChangePasswordRequest req)
+    // getTechnicians()
+    // getUsersByRole(UserRole role)
+
 }

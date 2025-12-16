@@ -15,4 +15,11 @@ public interface IWorkService {
     void deleteWork(UUID id);
     Work assignTechnician(UUID workId, UUID technicianId);
     Work updateWorkStatus(UUID workId, WorkStatus status);
+
+    // da aggiungere:
+    // completeWork(UUID workId) -> verifica precondizioni (tasks completati, report ok se serve) e porta il work a DONE.
+    // getWorksByTechnician -> necessario per “dashboard tecnico / i miei lavori”.
+    // getWorksByStatus(WorkStatus status)
+    // getWorksByPlantId(UUID plantId) e getWorksByTicketId(UUID ticketId) -> utile per storico e tracciabilità.
+
 }

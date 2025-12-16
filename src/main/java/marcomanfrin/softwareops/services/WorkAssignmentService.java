@@ -26,7 +26,7 @@ public class WorkAssignmentService implements IWorkAssignmentService {
     }
 
     @Override
-    public WorkAssignment assignTechnicianToWork(UUID workId, UUID technicianId, AssignmentRole role) {
+    public void assignTechnicianToWork(UUID workId, UUID technicianId, AssignmentRole role) {
         Work work = workRepository.findById(workId)
                 .orElseThrow(() -> new RuntimeException("Work not found"));
         User user = userRepository.findById(technicianId)
@@ -40,6 +40,6 @@ public class WorkAssignmentService implements IWorkAssignmentService {
         assignment.setAssignedAt(LocalDateTime.now());
         assignment.setAssignmentRole(role);
 
-        return workAssignmentRepository.save(assignment);
+        workAssignmentRepository.save(assignment);
     }
 }

@@ -11,4 +11,12 @@ public interface IClientService {
     List<Client> getAllClients();
     Client updateClient(UUID id, String name, String type);
     void deleteClient(UUID id);
+
+    // to implement:
+    // completeTask(UUID taskId) -> più “business oriented” di updateTaskStatus, e può triggerare controlli sul Work.
+    // completeAllTasks(UUID workId)
+    // areAllTasksCompleted(UUID workId) / getCompletionRate(UUID workId)
+    // getTasksByStatus(UUID workId, TaskStatus status)
+    // searchClients(String query)
+
 }

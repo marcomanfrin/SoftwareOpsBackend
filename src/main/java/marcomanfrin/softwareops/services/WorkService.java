@@ -14,14 +14,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class WorkServiceImpl implements IWorkService {
+public class WorkService implements IWorkService {
 
     private final WorkRepository workRepository;
     private final PlantRepository plantRepository;
     private final TicketRepository ticketRepository;
     private final WorkAssignmentService workAssignmentService;
 
-    public WorkServiceImpl(WorkRepository workRepository, PlantRepository plantRepository, TicketRepository ticketRepository, WorkAssignmentService workAssignmentService) {
+    public WorkService(WorkRepository workRepository, PlantRepository plantRepository, TicketRepository ticketRepository, WorkAssignmentService workAssignmentService) {
         this.workRepository = workRepository;
         this.plantRepository = plantRepository;
         this.ticketRepository = ticketRepository;
