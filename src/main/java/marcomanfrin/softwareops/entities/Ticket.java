@@ -20,6 +20,12 @@ public class Ticket {
     private LocalDateTime createdAt;
     private LocalDateTime UpdatedAt;
     private LocalDateTime ResolvedAt;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id")
+    private Client client;
+    @ManyToOne(optional = true) // o false se obbligatorio
+    @JoinColumn(name = "plant_id")
+    private Plant plant;
 
     public LocalDateTime getResolvedAt() {
         return ResolvedAt;
