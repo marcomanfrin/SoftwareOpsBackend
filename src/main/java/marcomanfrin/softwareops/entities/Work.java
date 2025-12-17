@@ -22,6 +22,10 @@ public abstract class Work {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public UUID getId() {
+        return id;
+    }
+
     public void setStatus(WorkStatus status) {
         this.status = status;
     }

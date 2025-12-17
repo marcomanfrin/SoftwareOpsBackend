@@ -45,6 +45,10 @@ public class Plant {
         this.invoiced = invoiced;
     }
 
+    public boolean isInvoiced() {
+        return invoiced;
+    }
+
     public void setInvoicedAt(LocalDateTime invoicedAt) {
         this.invoicedAt = invoicedAt;
     }

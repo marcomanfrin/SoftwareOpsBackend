@@ -12,9 +12,6 @@ public interface IPlantService {
     Plant updatePlant(UUID id, String name, String notes, String orderNumber);
     void deletePlant(UUID id);
     Plant invoicePlant(UUID id);
-
-    // to implement:
-    // getPlantsByClient(UUID clientId)
-    // searchPlants(String query) (nome, orderNumber, note…)
-    //
+    List<Plant> getPlantsByClient(UUID clientId);
+    List<Plant> searchPlants(String query);
 }

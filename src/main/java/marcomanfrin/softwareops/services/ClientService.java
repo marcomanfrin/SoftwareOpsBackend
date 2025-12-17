@@ -19,10 +19,16 @@ public class ClientService implements IClientService {
     }
 
     @Override
-    public Client createClient(String name, String type) {
+    public Client createClient(String name, ClientType type) {
+        String validatedName = validateName(name);
+
+         if (clientRepository.existsByNameIgnoreCase(validatedName)) {
+             throw new IllegalArgumentException("Client name already exists");
+         }
+
         Client client = new Client();
-        client.setName(name);
-        client.setType(ClientType.valueOf(type.toUpperCase()));
+        client.setName(validatedName);
+        client.setType(type);
         return clientRepository.save(client);
     }
 
@@ -37,16 +43,32 @@ public class ClientService implements IClientService {
     }
 
     @Override
-    public Client updateClient(UUID id, String name, String type) {
+    public Client updateClient(UUID id, String name, ClientType type) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found"));
         client.setName(name);
-        client.setType(ClientType.valueOf(type.toUpperCase()));
+        client.setType(type);
         return clientRepository.save(client);
     }
 
     @Override
     public void deleteClient(UUID id) {
+        if (!clientRepository.existsById(id)) {
+            throw new RuntimeException("Client not found: " + id);
+        }
         clientRepository.deleteById(id);
+    }
+
+    public List<Client> searchClients(String query) {
+        String q = (query == null) ? "" : query.trim();
+        if (q.isBlank()) return getAllClients();
+        return clientRepository.findByNameContainingIgnoreCase(q);
+    }
+
+    private String validateName(String name) {
+        if (name == null || name.trim().isBlank()) {
+            throw new IllegalArgumentException("Client name cannot be blank");
+        }
+        return name.trim();
     }
 }

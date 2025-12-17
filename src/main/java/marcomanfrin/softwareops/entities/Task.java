@@ -13,6 +13,10 @@ public class Task {
     @GeneratedValue
     private UUID id;
 
+    public TaskStatus getStatus() {
+        return status;
+    }
+
     private String text;
 
     @Enumerated(EnumType.STRING)
@@ -31,5 +35,9 @@ public class Task {
 
     public void setWork(Work work) {
         this.work = work;
+    }
+
+    public Work getWork() {
+        return work;
     }
 }

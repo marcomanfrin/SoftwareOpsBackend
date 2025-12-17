@@ -14,4 +14,9 @@ public interface ITaskService {
     Task updateTask(UUID id, String text);
     void deleteTask(UUID id);
     Task updateTaskStatus(UUID id, TaskStatus status);
+    Task completeTask(UUID taskId);
+    List<Task> completeAllTasks(UUID workId);
+    boolean areAllTasksCompleted(UUID workId);
+    double getCompletionRate(UUID workId);
+    List<Task> getTasksByStatus(UUID workId, TaskStatus status);
 }

@@ -1,22 +1,18 @@
 package marcomanfrin.softwareops.services;
 
 import marcomanfrin.softwareops.entities.Client;
+import marcomanfrin.softwareops.enums.ClientType;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
 public interface IClientService {
-    Client createClient(String name, String type);
+
+    Client createClient(String name, ClientType type);
     Optional<Client> getClientById(UUID id);
     List<Client> getAllClients();
-    Client updateClient(UUID id, String name, String type);
+    Client updateClient(UUID id, String name, ClientType type);
     void deleteClient(UUID id);
-
-    // to implement:
-    // completeTask(UUID taskId) -> più “business oriented” di updateTaskStatus, e può triggerare controlli sul Work.
-    // completeAllTasks(UUID workId)
-    // areAllTasksCompleted(UUID workId) / getCompletionRate(UUID workId)
-    // getTasksByStatus(UUID workId, TaskStatus status)
-    // searchClients(String query)
-
+    List<Client> searchClients(String query);
 }
