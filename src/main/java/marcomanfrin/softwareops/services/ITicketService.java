@@ -1,6 +1,8 @@
 package marcomanfrin.softwareops.services;
 
 import marcomanfrin.softwareops.entities.Ticket;
+import marcomanfrin.softwareops.enums.TicketStatus;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
@@ -11,10 +13,10 @@ public interface ITicketService {
     List<Ticket> getAllTickets();
     Ticket updateTicket(UUID id, String name, String description);
     void deleteTicket(UUID id);
-    Ticket changeTicketStatus(UUID id, String status);
+    Ticket changeTicketStatus(UUID id, TicketStatus status);
+    Ticket closeTicket(UUID ticketId);        // alias narrativo
+    List<Ticket> getTicketsByStatus(TicketStatus status);
+    List<Ticket> getTicketsByClient(UUID clientId);
+    List<Ticket> getTicketsByPlant(UUID plantId);
 
-    // to implement:
-    // closeTicket(UUID ticketId) / resolveTicket(UUID ticketId) → alias narrativo che setta DONE + eventuali side-effects.
-    // getTicketsByStatus(TicketStatus status)
-    // getTicketsByClient(UUID clientId) / getTicketsByPlant(UUID plantId)
 }

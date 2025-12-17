@@ -13,17 +13,36 @@ public class Ticket {
     @Id
     @GeneratedValue
     private UUID id;
-
     private String name;
     private String description;
-
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
-
     private LocalDateTime createdAt;
+    private LocalDateTime UpdatedAt;
+    private LocalDateTime ResolvedAt;
+
+    public LocalDateTime getResolvedAt() {
+        return ResolvedAt;
+    }
+
+    public void setResolvedAt(LocalDateTime resolvedAt) {
+        ResolvedAt = resolvedAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return UpdatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        UpdatedAt = updatedAt;
+    }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public TicketStatus getStatus() {
+        return status;
     }
 
     public void setDescription(String description) {
