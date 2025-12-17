@@ -12,15 +12,18 @@ public interface IWorkReportService {
     WorkReport createWorkReport(UUID workId, UUID ticketId);
     Optional<WorkReport> getWorkReportById(UUID id);
     List<WorkReport> getWorkReportsByWorkId(UUID workId);
+
+    Optional<WorkReport> getWorkReportByWorkId(UUID workId);
+
     WorkReportEntry addWorkReportEntry(UUID reportId, UUID taskId, BigDecimal hours);
+    WorkReportEntry updateWorkReportEntry(UUID entryId, BigDecimal hours);
+    void removeWorkReportEntry(UUID entryId);
+
     WorkReport calculateTotalHours(UUID reportId);
+    WorkReport calculateAndPersistTotalHours(UUID workId);
+
+    WorkReport finalizeWorkReport(UUID workId);
+
     WorkReport invoiceWorkReport(UUID reportId);
-
-    // to implement
-    // getWorkReportByWorkId(UUID workId) -> in narrativa il report è “del work”, più che “by id”
-    // finalizeWorkReport(UUID workId) → “report completato” (blocco aggiunta entry dopo finalize).
-    // removeWorkReportEntry(UUID entryId) / updateWorkReportEntry(UUID entryId, dto) → spesso serve correggere consuntivi.
-    // calculateAndPersistTotalHours(UUID workId) → per salvare totalHours in DB e non ricalcolarlo sempre.
-    // canInvoice(UUID workId)
-
+    boolean canInvoice(UUID workId);
 }

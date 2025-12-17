@@ -14,9 +14,12 @@ public abstract class Work {
     @Id
     @GeneratedValue
     private UUID id;
-
     @Enumerated(EnumType.STRING)
     private WorkStatus status;
+
+    public WorkStatus getStatus() {
+        return status;
+    }
 
     private int progressPercent;
     private LocalDateTime createdAt;

@@ -1,15 +1,13 @@
 package marcomanfrin.softwareops.services;
 
+import marcomanfrin.softwareops.entities.WorkAssignment;
 import marcomanfrin.softwareops.enums.AssignmentRole;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface IWorkAssignmentService {
     void assignTechnicianToWork(UUID workId, UUID technicianId, AssignmentRole role);
-
-    // to implement:
-    // getAssignmentsByWorkId(UUID workId) → per vedere chi è assegnato (admin e tecnico).
-    // getAssignmentsByTechnicianId(UUID technicianId) → “i miei incarichi”.
-    //
-
+    List<WorkAssignment> getAssignmentsByWorkId(UUID workId);
+    List<WorkAssignment> getAssignmentsByTechnicianId(UUID technicianId);
 }

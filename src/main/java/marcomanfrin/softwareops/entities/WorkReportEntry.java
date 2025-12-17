@@ -12,17 +12,18 @@ import java.util.UUID;
 @Entity
 @Table(name = "work_report_entries")
 public class WorkReportEntry {
-
     @Id
     @GeneratedValue
     private UUID id;
 
+    public WorkReport getReport() {
+        return report;
+    }
+
     @ManyToOne
     private WorkReport report;
-
     @ManyToOne
     private Task task;
-
     private BigDecimal hours;
 
     public void setReport(WorkReport report) {

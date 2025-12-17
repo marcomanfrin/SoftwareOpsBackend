@@ -14,20 +14,45 @@ import java.util.UUID;
 @Table(name = "work_reports")
 public class WorkReport {
 
+    public UUID getId() {
+        return id;
+    }
+
     @Id
     @GeneratedValue
     private UUID id;
-
     @ManyToOne
     private Work work;
-
     @ManyToOne
     private Ticket ticket;
-
     private BigDecimal totalHours;
     private boolean invoiced;
     private LocalDateTime invoicedAt;
     private LocalDateTime createdAt;
+    private boolean finalized;
+
+    public LocalDateTime getFinalizedAt() {
+        return finalizedAt;
+    }
+
+    public void setFinalizedAt(LocalDateTime finalizedAt) {
+        this.finalizedAt = finalizedAt;
+    }
+
+    private LocalDateTime finalizedAt;
+
+    public boolean isFinalized() {
+        return finalized;
+    }
+
+    public boolean isInvoiced() {
+        return invoiced;
+    }
+
+
+    public void setFinalized(boolean finalized) {
+        this.finalized = finalized;
+    }
 
     public void setWork(Work work) {
         this.work = work;

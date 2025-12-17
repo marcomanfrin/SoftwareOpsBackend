@@ -1,5 +1,6 @@
 package marcomanfrin.softwareops.services;
 
+import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.entities.WorkAssignment;
@@ -10,6 +11,7 @@ import marcomanfrin.softwareops.repositories.WorkRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,11 +30,22 @@ public class WorkAssignmentService implements IWorkAssignmentService {
     @Override
     public void assignTechnicianToWork(UUID workId, UUID technicianId, AssignmentRole role) {
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found"));
-        User user = userRepository.findById(technicianId)
-                .orElseThrow(() -> new RuntimeException("Technician not found"));
+                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
 
-        // TODO: check if the user is a technician
+        User user = userRepository.findById(technicianId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + technicianId));
+
+        boolean isTechnician = (user instanceof TechnicianUser);
+        if (!isTechnician) {
+            throw new IllegalArgumentException("User is not a technician: " + technicianId);
+        }
+
+        if (workAssignmentRepository.existsByWork_IdAndUser_Id(workId, technicianId)) {
+            WorkAssignment existing = workAssignmentRepository.findByWork_IdAndUser_Id(workId, technicianId).orElseThrow();
+            existing.setAssignmentRole(role);
+            workAssignmentRepository.save(existing);
+            return;
+        }
 
         WorkAssignment assignment = new WorkAssignment();
         assignment.setWork(work);
@@ -41,5 +54,15 @@ public class WorkAssignmentService implements IWorkAssignmentService {
         assignment.setAssignmentRole(role);
 
         workAssignmentRepository.save(assignment);
+    }
+
+    @Override
+    public List<WorkAssignment> getAssignmentsByWorkId(UUID workId) {
+        return workAssignmentRepository.findByWork_Id(workId);
+    }
+
+    @Override
+    public List<WorkAssignment> getAssignmentsByTechnicianId(UUID technicianId) {
+        return workAssignmentRepository.findByUser_Id(technicianId);
     }
 }
