@@ -20,6 +20,39 @@ public abstract class User {
     private String firstName;
     private String surname;
     private String ProfileImageUrl;
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public String getProfileImageUrl() {
+        return ProfileImageUrl;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
