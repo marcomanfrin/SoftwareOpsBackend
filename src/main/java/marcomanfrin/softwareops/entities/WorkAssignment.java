@@ -25,6 +25,10 @@ public class WorkAssignment {
     @Enumerated(EnumType.STRING)
     private AssignmentRole assignmentRole;
 
+    public Work getWork() {
+        return work;
+    }
+
     public void setWork(Work work) {
         this.work = work;
     }

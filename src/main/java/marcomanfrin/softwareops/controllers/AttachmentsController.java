@@ -1,38 +1,50 @@
 package marcomanfrin.softwareops.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import marcomanfrin.softwareops.DTO.CreateAttachmentRequest;
+import marcomanfrin.softwareops.entities.Attachment;
+import marcomanfrin.softwareops.entities.AttachmentLink;
+import marcomanfrin.softwareops.enums.AttachmentTargetType;
+import marcomanfrin.softwareops.services.IAttachmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/attachments")
+@RequestMapping("") // Resetting base path to define full paths in methods
 public class AttachmentsController {
-/* **AttachmentTargetT
-            - `WORK`
-            - `PLANT`
-            - `TICKET`
-            - `REPORT`
 
-            ### Upload
+    @Autowired
+    private IAttachmentService attachmentService;
 
-- **POST** `/attachments` _(multipart/form-data)_
+    @PostMapping("/attachments")
+    public AttachmentLink createAndLinkAttachment(@RequestBody CreateAttachmentRequest request) {
+        return attachmentService.createAndLink(
+                request.url(),
+                request.type(),
+                request.targetType(),
+                request.targetId()
+        );
+    }
 
-    Campi esempio:
-            - `file`
-            - `targetType`
-            - `targetId`
-            - `type`
+    @GetMapping("/{targetType}/{targetId}/attachments")
+    public List<Attachment> getAttachments(
+            @PathVariable AttachmentTargetType targetType,
+            @PathVariable UUID targetId) {
+        return attachmentService.getAttachments(targetType, targetId);
+    }
 
-            ### Accesso
+    @DeleteMapping("/attachments/{attachmentId}")
+    public ResponseEntity<Void> deleteAttachment(@PathVariable UUID attachmentId) {
+        attachmentService.deleteAttachment(attachmentId);
+        return ResponseEntity.noContent().build();
+    }
 
-- **GET** `/attachments/{id}` ->Restituisce metadata + URL
-
-- **GET** `/{targetType}/{targetId}/attachments`
-
-    Esempi:
-            - `/works/{id}/attachments`
-            - `/plants/{id}/attachments`
-            - `/tickets/{id}/attachments`
-            - `/reports/{id}/attachments`
-
-            - **DELETE** `/attachments/{id}`*/
+    @DeleteMapping("/attachment-links/{linkId}")
+    public ResponseEntity<Void> unlinkAttachment(@PathVariable UUID linkId) {
+        attachmentService.unlink(linkId);
+        return ResponseEntity.noContent().build();
+    }
 }

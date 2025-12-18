@@ -27,6 +27,10 @@ public class Ticket {
     @JoinColumn(name = "plant_id")
     private Plant plant;
 
+    public UUID getId() {
+        return id;
+    }
+
     public LocalDateTime getResolvedAt() {
         return ResolvedAt;
     }
