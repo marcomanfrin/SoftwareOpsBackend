@@ -66,8 +66,7 @@ Gestione utenti e immagine profilo.
 - **POST** `/tickets`
 - **GET** `/tickets`
 - **GET** `/tickets/{id}`
-- **PATCH** `/tickets/{id}`  
-  (incluso cambio stato)
+- **PATCH** `/tickets/{id}` (incluso cambio stato)
 
 - **DELETE** `/tickets/{id}`
 
@@ -94,11 +93,9 @@ Operazioni sulla **commessa/lavoro**, indipendentemente dalla sorgente.
   - `to`
 
 - **GET** `/works/{id}`
-- **PATCH** `/works/{id}`  
-  (note, scadenze, ecc.)
+- **PATCH** `/works/{id}` (note, scadenze, ecc.)
 
-- **DELETE** `/works/{id}`  
-  (se consentito)
+- **DELETE** `/works/{id}` (se consentito)
 
 ### Assegnazioni tecnici
 
@@ -109,32 +106,20 @@ Operazioni sulla **commessa/lavoro**, indipendentemente dalla sorgente.
     "role": "LEAD | MEMBER"
   }
 
-## Assegnazioni tecnici (continuazione)
+- **DELETE** `/works/{id}/assignments/{assignmentId}` -> Rimuove una assegnazione esistente
 
-- **DELETE** `/works/{id}/assignments/{assignmentId}`  
-  Rimuove una assegnazione esistente
-
-- **POST** `/works/{id}/self-assign`  
-  Auto-assegnazione del tecnico  
-  _(endpoint opzionale, utile per UX semplificata)_
+- **POST** `/works/{id}/self-assign` -> Auto-assegnazione del tecnico _(endpoint opzionale, utile per UX semplificata)_
 
 ---
 
 ## Stato avanzato del lavoro
 
-- **POST** `/works/{id}/complete`  
-  Segna il lavoro come completato  
-
+- **POST** `/works/{id}/complete` -> Segna il lavoro come completato
   Validazioni tipiche:
   - tutte le task completate
   - report presente e finalizzato (se `WorkFromTicket`)
 
-- **POST** `/works/{id}/invoice`  
-  oppure  
-  **POST** `/works/{id}/mark-invoiced`  
-
-  Segna il lavoro come fatturato  
-  _(solo amministrativi)_
+- **POST** `/works/{id}/invoice` -> Segna il lavoro come fatturato _(solo amministrativi)_
 
 ---
 
@@ -143,8 +128,7 @@ Operazioni sulla **commessa/lavoro**, indipendentemente dalla sorgente.
 - **POST** `/works/{workId}/tasks`
 - **GET** `/works/{workId}/tasks`
 - **GET** `/tasks/{taskId}`
-- **PATCH** `/tasks/{taskId}`  
-  Aggiornamento task (titolo, note, ecc.)
+- **PATCH** `/tasks/{taskId}` -> Aggiornamento task (titolo, note, ecc.)
 
 - **PATCH** `/tasks/{taskId}/status`  
   Stato task:
@@ -160,18 +144,12 @@ Operazioni sulla **commessa/lavoro**, indipendentemente dalla sorgente.
 
 ## 8) ReportsController (soprattutto per WorkFromTicket)
 
-- **POST** `/works/{workId}/reports`  
-  Crea report “contenitore” (se necessario)
-
-- **GET** `/works/{workId}/report`  
-  Recupera il report corrente
+- **POST** `/works/{workId}/reports` -> Crea report “contenitore” (se necessario)
+- **GET** `/works/{workId}/report` -> Recupera il report corrente
 
 ### Righe del report
 
-- **POST** `/works/{workId}/report/rows`  
-  Aggiunge una riga di report  
-  (attività svolta + tempo impiegato)
-
+- **POST** `/works/{workId}/report/rows` -> Aggiunge una riga di report (attività svolta + tempo impiegato)
 - **PATCH** `/works/{workId}/report/rows/{rowId}`
 - **DELETE** `/works/{workId}/report/rows/{rowId}`
 
@@ -196,8 +174,7 @@ Gestione allegati con target generico.
 
 ### Upload
 
-- **POST** `/attachments`  
-  _(multipart/form-data)_
+- **POST** `/attachments` _(multipart/form-data)_
 
 Campi esempio:
 - `file`
@@ -207,8 +184,7 @@ Campi esempio:
 
 ### Accesso
 
-- **GET** `/attachments/{id}`  
-  Restituisce metadata + URL
+- **GET** `/attachments/{id}` ->Restituisce metadata + URL
 
 - **GET** `/{targetType}/{targetId}/attachments`
 

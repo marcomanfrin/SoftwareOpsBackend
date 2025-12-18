@@ -19,4 +19,10 @@ public class UsersController {
     public List<User> getUsers() {
         return this.usersService.getAllUsers();
     }
+
+    //**GET** `/users/{id}` -> Lista utenti
+    //**PATCH** `/users/{id}` -> Dettaglio utente
+    //**PATCH** `/users/{id}/role` -> Update profilo
+    //**POST** `/users/{id}/profile-image` -> Cambio ruolo
+    //**POST** `/users/{id}/profile-image` -> Upload immagine profilo // TODO: with claudinary
 }
