@@ -1,5 +1,7 @@
 package marcomanfrin.softwareops.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import marcomanfrin.softwareops.entities.Attachment;
 import marcomanfrin.softwareops.entities.AttachmentLink;
@@ -7,15 +9,20 @@ import marcomanfrin.softwareops.enums.AttachmentTargetType;
 import marcomanfrin.softwareops.enums.AttachmentType;
 import marcomanfrin.softwareops.repositories.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class AttachmentService implements IAttachmentService {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentLinkRepository attachmentLinkRepository;
+    private final Cloudinary cloudinary;
 
     private final WorkRepository workRepository;
     private final PlantRepository plantRepository;
@@ -24,12 +31,13 @@ public class AttachmentService implements IAttachmentService {
 
     public AttachmentService(AttachmentRepository attachmentRepository,
                              AttachmentLinkRepository attachmentLinkRepository,
-                             WorkRepository workRepository,
+                             Cloudinary cloudinary, WorkRepository workRepository,
                              PlantRepository plantRepository,
                              TicketRepository ticketRepository,
                              WorkReportRepository workReportRepository) {
         this.attachmentRepository = attachmentRepository;
         this.attachmentLinkRepository = attachmentLinkRepository;
+        this.cloudinary = cloudinary;
         this.workRepository = workRepository;
         this.plantRepository = plantRepository;
         this.ticketRepository = ticketRepository;
@@ -37,51 +45,50 @@ public class AttachmentService implements IAttachmentService {
     }
 
     @Override
-    public Attachment createAttachment(String url, AttachmentType type) {
-        if (type == null) throw new IllegalArgumentException("Attachment type cannot be null");
-        String u = requireNotBlank(url, "url");
-
-        Attachment attachment = new Attachment();
-        attachment.setUrl(u);
-        attachment.setType(type);
-        attachment.setUploadedAt(LocalDateTime.now());
-
-        return attachmentRepository.save(attachment);
-    }
-
-    @Override
-    public AttachmentLink linkAttachment(UUID attachmentId, AttachmentTargetType targetType, UUID targetId) {
-        if (targetType == null) throw new IllegalArgumentException("targetType cannot be null");
-        if (targetId == null) throw new IllegalArgumentException("targetId cannot be null");
-
-        Attachment attachment = attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new RuntimeException("Attachment not found: " + attachmentId));
-
+    @Transactional
+    public AttachmentLink uploadAndLink(MultipartFile file, AttachmentTargetType targetType, UUID targetId) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
         assertTargetExists(targetType, targetId);
 
-        // idempotenza: evita doppio link uguale
-        if (attachmentLinkRepository.existsByAttachment_IdAndTargetTypeAndTargetId(attachmentId, targetType, targetId)) {
-            // ritorna il primo match
-            return attachmentLinkRepository.findByAttachment_Id(attachmentId).stream()
-                    .filter(l -> l.getTargetType() == targetType && targetId.equals(l.getTargetId()))
-                    .findFirst()
-                    .orElseThrow();
+        try
+        {
+            String resourceTypeIn = Objects.requireNonNull(file.getContentType()).startsWith("image/")
+                    ? "image"
+                    : "raw";
+
+            var options = ObjectUtils.asMap(
+                    "folder", "SoftwareOps/attachments" + targetType.name().toLowerCase(),
+                    "resource_type", resourceTypeIn
+            );
+
+            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
+            String url = result.get("secure_url").toString();
+            String publicId = result.get("public_id").toString();
+            String resourceTypeOut = result.get("resource_type").toString();
+
+            AttachmentType type = determineAttachmentType(file.getContentType());
+
+            Attachment attachment = new Attachment();
+            attachment.setUrl(url);
+            attachment.setPublicId(publicId);
+            attachment.setResourceType(resourceTypeOut);
+            attachment.setType(type);
+            attachment.setUploadedAt(LocalDateTime.now());
+            attachmentRepository.save(attachment);
+
+            AttachmentLink link = new AttachmentLink();
+            link.setAttachment(attachment);
+            link.setTargetType(targetType);
+            link.setTargetId(targetId);
+            return attachmentLinkRepository.save(link);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading file", e);
         }
-
-        AttachmentLink link = new AttachmentLink();
-        link.setAttachment(attachment);
-        link.setTargetType(targetType);
-        link.setTargetId(targetId);
-
-        return attachmentLinkRepository.save(link);
     }
 
-    @Override
-    @Transactional
-    public AttachmentLink createAndLink(String url, AttachmentType type, AttachmentTargetType targetType, UUID targetId) {
-        Attachment attachment = createAttachment(url, type);
-        return linkAttachment(attachment.getId(), targetType, targetId);
-    }
 
     @Override
     public List<Attachment> getAttachments(AttachmentTargetType targetType, UUID targetId) {
@@ -109,6 +116,22 @@ public class AttachmentService implements IAttachmentService {
         Attachment attachment = attachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new RuntimeException("Attachment not found: " + attachmentId));
 
+        // TODO: Delete from Cloudinary as well
+        if (attachment.getPublicId() != null && !attachment.getPublicId().isBlank()) {
+            try {
+                String rt = (attachment.getResourceType() == null || attachment.getResourceType().isBlank())
+                        ? "auto"
+                        : attachment.getResourceType();
+
+                cloudinary.uploader().destroy(
+                        attachment.getPublicId(),
+                        ObjectUtils.asMap("resource_type", rt)
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Error deleting file from Cloudinary", e);
+            }
+        }
+
         // elimina prima i link
         List<AttachmentLink> links = attachmentLinkRepository.findByAttachment_Id(attachmentId);
         attachmentLinkRepository.deleteAll(links);
@@ -128,6 +151,22 @@ public class AttachmentService implements IAttachmentService {
         if (!exists) {
             throw new RuntimeException("Target not found: " + targetType + " " + targetId);
         }
+    }
+
+    private AttachmentType determineAttachmentType(String contentType) {
+        if (contentType == null) {
+            return AttachmentType.OTHER;
+        }
+        if (contentType.startsWith("image/")) {
+            return AttachmentType.PHOTO;
+        }
+        if (contentType.equals("application/pdf")) {
+            return AttachmentType.PDF;
+        }
+        if (contentType.startsWith("application/vnd.openxmlformats-officedocument") || contentType.equals("application/msword")) {
+            return AttachmentType.DOC;
+        }
+        return AttachmentType.OTHER;
     }
 
     private String requireNotBlank(String value, String field) {

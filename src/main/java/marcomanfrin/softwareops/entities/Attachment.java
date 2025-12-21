@@ -9,6 +9,24 @@ import java.util.UUID;
 @Entity
 @Table(name = "attachments")
 public class Attachment {
+    @Id
+    @GeneratedValue
+    private UUID id;
+    private String url;
+    private String publicId;
+    private String resourceType;
+    @Enumerated(EnumType.STRING)
+    private AttachmentType type;
+    private LocalDateTime uploadedAt;
+
+    public String getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(String publicId) {
+        this.publicId = publicId;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -41,14 +59,11 @@ public class Attachment {
         this.uploadedAt = uploadedAt;
     }
 
-    @Id
-    @GeneratedValue
-    private UUID id;
+    public String getResourceType() {
+        return resourceType;
+    }
 
-    private String url;
-
-    @Enumerated(EnumType.STRING)
-    private AttachmentType type;
-
-    private LocalDateTime uploadedAt;
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
 }
