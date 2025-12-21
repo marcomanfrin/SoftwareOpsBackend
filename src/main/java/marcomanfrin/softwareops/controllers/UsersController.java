@@ -11,6 +11,7 @@ import marcomanfrin.softwareops.services.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -86,5 +87,9 @@ public class UsersController {
         return usersService.getUsersByRole(role);
     }
 
-    //**POST** `/users/{id}/profile-image` -> Upload immagine profilo // TODO: with claudinary
+    @PatchMapping("/{id}/avatar")
+    public ResponseEntity<String> uploadProfileImage(@PathVariable UUID id, @RequestParam("avatar") MultipartFile file) {
+        String imageUrl = usersService.uploadProfileImage(id, file);
+        return ResponseEntity.ok(imageUrl);
+    }
 }

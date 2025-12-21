@@ -1,14 +1,21 @@
 package marcomanfrin.softwareops.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import jakarta.persistence.EntityNotFoundException;
 import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
 import marcomanfrin.softwareops.entities.AdministrativeUser;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +23,9 @@ import java.util.UUID;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
+    @Autowired
+    private Cloudinary imageUploader;
+
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -134,6 +144,43 @@ public class UserService implements IUserService {
     public List<User> getUsersByRole(UserRole role) {
         if (role == null) throw new IllegalArgumentException("Role cannot be null");
         return userRepository.findByRole(role);
+    }
+
+    @Override
+    public String uploadProfileImage(UUID userId, MultipartFile file) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        if (!file.getContentType().startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+
+        Map<String, Object> options = ObjectUtils.asMap(
+                "folder", "SoftwareOps/avatars",
+                "public_id", userId.toString()
+        );
+
+        try {
+            Map<?, ?> result = imageUploader.uploader().upload(
+                    file.getBytes(),
+                    options
+            );
+
+            String imageUrl = result.get("secure_url").toString();
+
+            user.setProfileImageUrl(imageUrl);
+            userRepository.save(user);
+
+            return imageUrl;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading image", e);
+        }
     }
 
     private User createUserByType(String userType) {
