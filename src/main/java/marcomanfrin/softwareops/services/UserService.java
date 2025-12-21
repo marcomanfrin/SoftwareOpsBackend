@@ -9,6 +9,7 @@ import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.repositories.UserRepository;
+import marcomanfrin.softwareops.tools.MailgunSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,8 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     @Autowired
     private Cloudinary imageUploader;
+    @Autowired
+    private MailgunSender mailgunSender;
 
 
     public UserService(UserRepository userRepository) {
@@ -60,7 +63,9 @@ public class UserService implements IUserService {
         user.setSurname(surname);
         user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + firstName + "+" + surname);
         user.setRole(role);
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        this.mailgunSender.sendRegistrationEmail(saved);
+        return saved;
     }
 
     @Override
