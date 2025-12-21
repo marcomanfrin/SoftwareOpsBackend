@@ -36,6 +36,7 @@ public class PlantsController {
 
     @GetMapping
     public List<Plant> getAllPlants() {
+        // TODO: more info
         return plantService.getAllPlants();
     }
 
