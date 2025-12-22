@@ -116,7 +116,6 @@ public class AttachmentService implements IAttachmentService {
         Attachment attachment = attachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new RuntimeException("Attachment not found: " + attachmentId));
 
-        // TODO: Delete from Cloudinary as well
         if (attachment.getPublicId() != null && !attachment.getPublicId().isBlank()) {
             try {
                 String rt = (attachment.getResourceType() == null || attachment.getResourceType().isBlank())
