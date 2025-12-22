@@ -13,32 +13,33 @@ public class Client {
     @GeneratedValue
     private UUID id;
 
-    public ClientType getType() {
-        return type;
-    }
+    @Column(nullable = false)
+    private String name;
 
-    public void setType(ClientType type) {
-        this.type = type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ClientType type;
+
+    // Getters and Setters
+
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public UUID getId() {
-        return id;
+    public ClientType getType() {
+        return type;
     }
-
-    public void setId(UUID id) {
-        this.id = id;
+    public void setType(ClientType type) {
+        this.type = type;
     }
-
-    private String name;
-
-    @Enumerated(EnumType.STRING)
-    private ClientType type;
 }

@@ -13,31 +13,46 @@ public class Task {
     @GeneratedValue
     private UUID id;
 
-    public TaskStatus getStatus() {
-        return status;
-    }
-
+    @Column(nullable = false, length = 2000)
     private String text;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TaskStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "work_id", nullable = false)
     private Work work;
 
+    // Ctor
+
+    // Getters and Setters
+
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getText() {
+        return text;
+    }
     public void setText(String text) {
         this.text = text;
     }
 
+    public TaskStatus getStatus() {
+        return status;
+    }
     public void setStatus(TaskStatus status) {
         this.status = status;
     }
 
-    public void setWork(Work work) {
-        this.work = work;
-    }
-
     public Work getWork() {
         return work;
+    }
+    public void setWork(Work work) {
+        this.work = work;
     }
 }

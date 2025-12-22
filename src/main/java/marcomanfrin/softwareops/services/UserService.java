@@ -64,7 +64,7 @@ public class UserService implements IUserService {
         user.setEmail(e);
         user.setPasswordHash(bcrypt.encode(password));
         user.setFirstName(firstName);
-        user.setSurname(surname);
+        user.setLastName(surname);
         user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + firstName + "+" + surname);
         user.setRole(role);
         User saved = userRepository.save(user);
@@ -91,7 +91,7 @@ public class UserService implements IUserService {
         user.setEmail(e);
         user.setPasswordHash(bcrypt.encode(p));
         user.setFirstName(body.firstName());
-        user.setSurname(body.surname());
+        user.setLastName(body.surname());
         user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.surname());
         user.setRole(UserRole.USER);
         User saved = userRepository.save(user);
@@ -122,7 +122,7 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
 
         user.setFirstName(firstName);
-        user.setSurname(surname);
+        user.setLastName(surname);
         user.setProfileImageUrl(profileImageUrl);
 
         return userRepository.save(user);

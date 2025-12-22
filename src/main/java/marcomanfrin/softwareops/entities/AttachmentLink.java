@@ -6,47 +6,61 @@ import marcomanfrin.softwareops.enums.AttachmentTargetType;
 import java.util.UUID;
 
 @Entity
-@Table(name = "attachment_links")
+@Table(
+        name = "attachment_links",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_attachment_target",
+                        columnNames = {"attachment_id", "target_type", "target_id"}
+                )
+        }
+)
 public class AttachmentLink {
+
     @Id
     @GeneratedValue
     private UUID id;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "attachment_id", nullable = false)
     private Attachment attachment;
+
     @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false)
     private AttachmentTargetType targetType;
 
-    public UUID getTargetId() {
-        return targetId;
-    }
+    @Column(name = "target_id", nullable = false)
+    private UUID targetId;
 
-    public void setTargetId(UUID targetId) {
-        this.targetId = targetId;
-    }
+    // Ctor
 
-    public AttachmentTargetType getTargetType() {
-        return targetType;
-    }
+    // Getters and Setters
 
-    public void setTargetType(AttachmentTargetType targetType) {
-        this.targetType = targetType;
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public Attachment getAttachment() {
         return attachment;
     }
-
     public void setAttachment(Attachment attachment) {
         this.attachment = attachment;
     }
 
-    public UUID getId() {
-        return id;
+    public AttachmentTargetType getTargetType() {
+        return targetType;
+    }
+    public void setTargetType(AttachmentTargetType targetType) {
+        this.targetType = targetType;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public UUID getTargetId() {
+        return targetId;
     }
-
-    private UUID targetId;
+    public void setTargetId(UUID targetId) {
+        this.targetId = targetId;
+    }
 }

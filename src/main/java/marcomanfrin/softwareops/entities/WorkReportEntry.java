@@ -1,10 +1,6 @@
 package marcomanfrin.softwareops.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -16,29 +12,45 @@ public class WorkReportEntry {
     @GeneratedValue
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "report_id", nullable = false)
+    private WorkReport report;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "task_id")
+    private Task task;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal hours = BigDecimal.ZERO;
+
+
+    // Getters and Setters
+
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public WorkReport getReport() {
         return report;
     }
-
-    @ManyToOne
-    private WorkReport report;
-    @ManyToOne
-    private Task task;
-    private BigDecimal hours;
-
     public void setReport(WorkReport report) {
         this.report = report;
     }
 
+    public Task getTask() {
+        return task;
+    }
     public void setTask(Task task) {
         this.task = task;
     }
 
-    public void setHours(BigDecimal hours) {
-        this.hours = hours;
-    }
-
     public BigDecimal getHours() {
         return hours;
+    }
+    public void setHours(BigDecimal hours) {
+        this.hours = (hours == null) ? BigDecimal.ZERO : hours;
     }
 }

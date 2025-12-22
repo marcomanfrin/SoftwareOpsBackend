@@ -89,7 +89,7 @@ public class PlantService implements IPlantService {
                 .orElseThrow(() -> new RuntimeException("Plant not found: " + id));
 
         // idempotenza: se già fatturato, non cambiare nulla
-        if (plant.isInvoiced()) {
+        if (plant.getInvoiced()) {
             return plant;
         }
 
