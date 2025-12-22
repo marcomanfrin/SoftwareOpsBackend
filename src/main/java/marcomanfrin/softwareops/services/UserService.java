@@ -62,8 +62,7 @@ public class UserService implements IUserService {
 
         user.setUsername(u);
         user.setEmail(e);
-        // TOOD: hash password
-        user.setPasswordHash(p);
+        user.setPasswordHash(bcrypt.encode(password));
         user.setFirstName(firstName);
         user.setSurname(surname);
         user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + firstName + "+" + surname);
@@ -72,6 +71,34 @@ public class UserService implements IUserService {
         this.mailgunSender.sendRegistrationEmail(saved);
         return saved;
     }
+
+    @Override
+    public NewUserRespDTO saveNewUser(NewUserDTO body) {
+        String u = requireNotBlank(body.username(), "username");
+        String e = requireNotBlank(body.email(), "email").toLowerCase();
+        String p = requireNotBlank(body.password(), "password");
+
+        if (userRepository.existsByUsernameIgnoreCase(u)) {
+            throw new IllegalArgumentException("Username already exists: " + u);
+        }
+        if (userRepository.existsByEmailIgnoreCase(e)) {
+            throw new IllegalArgumentException("Email already exists: " + e);
+        }
+
+        User user = createUserByType("Technician");
+
+        user.setUsername(u);
+        user.setEmail(e);
+        user.setPasswordHash(bcrypt.encode(p));
+        user.setFirstName(body.firstName());
+        user.setSurname(body.surname());
+        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.surname());
+        user.setRole(UserRole.USER);
+        User saved = userRepository.save(user);
+        this.mailgunSender.sendRegistrationEmail(saved);
+        return new NewUserRespDTO(saved.getId());
+    }
+
 
     @Override
     public Optional<User> getUserById(UUID id) {
@@ -197,34 +224,6 @@ public class UserService implements IUserService {
     public Optional<User> getUserByEmail(String email) {
         if (email == null) return Optional.empty();
         return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public NewUserRespDTO saveNewUser(NewUserDTO body) {
-        String u = requireNotBlank(body.username(), "username");
-        String e = requireNotBlank(body.email(), "email").toLowerCase();
-        String p = requireNotBlank(body.password(), "password");
-
-        if (userRepository.existsByUsernameIgnoreCase(u)) {
-            throw new IllegalArgumentException("Username already exists: " + u);
-        }
-        if (userRepository.existsByEmailIgnoreCase(e)) {
-            throw new IllegalArgumentException("Email already exists: " + e);
-        }
-
-        User user = createUserByType("Technician");
-
-        user.setUsername(u);
-        user.setEmail(e);
-        // TOOD: hash password
-        user.setPasswordHash(p);
-        user.setFirstName(body.firstName());
-        user.setSurname(body.surname());
-        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.surname());
-        user.setRole(UserRole.USER);
-        User saved = userRepository.save(user);
-        this.mailgunSender.sendRegistrationEmail(saved);
-        return new NewUserRespDTO(saved.getId());
     }
 
     private User createUserByType(String userType) {

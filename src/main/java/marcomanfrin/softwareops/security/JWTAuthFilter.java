@@ -35,14 +35,14 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
 			String authorizationHeader = request.getHeader("Authorization");
 
-			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
-				throw new UnauthorizedException("Token mancante o non nel formato corretto");
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
 			String accessToken = authorizationHeader.replace("Bearer ", "");
 
 			jwtTools.verifyToken(accessToken);
-
-            filterChain.doFilter(request, response);
 
             // AUTHORIZATION
 
