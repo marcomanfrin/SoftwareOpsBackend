@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT u FROM TechnicianUser u")
     List<TechnicianUser> findAllTechnicians();
+
+    Optional<User> findByEmail(String email);
 }

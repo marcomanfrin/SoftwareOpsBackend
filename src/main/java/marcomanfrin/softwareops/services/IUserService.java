@@ -23,4 +23,5 @@ public interface IUserService {
     List<TechnicianUser> getTechnicians();
     List<User> getUsersByRole(UserRole role);
     String uploadProfileImage(UUID userId, MultipartFile file);
+    Optional<User> getUserByEmail(String email);
 }

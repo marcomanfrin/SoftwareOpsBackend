@@ -188,6 +188,12 @@ public class UserService implements IUserService {
         }
     }
 
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        if (email == null) return Optional.empty();
+        return userRepository.findByEmail(email);
+    }
+
     private User createUserByType(String userType) {
         if ("ADMINISTRATIVE".equalsIgnoreCase(userType)) return new AdministrativeUser();
         if ("TECHNICIAN".equalsIgnoreCase(userType)) return new TechnicianUser();
