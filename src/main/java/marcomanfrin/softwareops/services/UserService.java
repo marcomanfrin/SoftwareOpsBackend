@@ -4,19 +4,19 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import jakarta.persistence.EntityNotFoundException;
 import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
-import marcomanfrin.softwareops.DTO.NewUserDTO;
-import marcomanfrin.softwareops.DTO.NewUserRespDTO;
+import marcomanfrin.softwareops.DTO.registration.NewUserDTO;
+import marcomanfrin.softwareops.DTO.registration.NewUserRespDTO;
 import marcomanfrin.softwareops.entities.AdministrativeUser;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
+import marcomanfrin.softwareops.enums.UserType;
+import marcomanfrin.softwareops.exceptions.ValidationException;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.tools.MailgunSender;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,54 +27,20 @@ import java.util.UUID;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
-    @Autowired
-    private Cloudinary imageUploader;
-    @Autowired
-    private MailgunSender mailgunSender;
-    @Autowired
-    private PasswordEncoder bcrypt;
+    private final Cloudinary imageUploader;
+    private final MailgunSender mailgunSender;
+    private final PasswordEncoder bcrypt;
 
-
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, Cloudinary imageUploader, MailgunSender mailgunSender, PasswordEncoder bcrypt) {
         this.userRepository = userRepository;
-    }
-
-    @Override
-    public User createUser(String username,
-                           String email,
-                           String password,
-                           String firstName,
-                           String surname,
-                           UserRole role,
-                           String userType) {
-        String u = requireNotBlank(username, "username");
-        String e = requireNotBlank(email, "email").toLowerCase();
-        String p = requireNotBlank(password, "password");
-
-        if (userRepository.existsByUsernameIgnoreCase(u)) {
-            throw new IllegalArgumentException("Username already exists: " + u);
-        }
-        if (userRepository.existsByEmailIgnoreCase(e)) {
-            throw new IllegalArgumentException("Email already exists: " + e);
-        }
-
-        User user = createUserByType(userType);
-
-        user.setUsername(u);
-        user.setEmail(e);
-        user.setPasswordHash(bcrypt.encode(password));
-        user.setFirstName(firstName);
-        user.setLastName(surname);
-        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + firstName + "+" + surname);
-        user.setRole(role);
-        User saved = userRepository.save(user);
-        this.mailgunSender.sendRegistrationEmail(saved);
-        return saved;
+        this.imageUploader = imageUploader;
+        this.mailgunSender = mailgunSender;
+        this.bcrypt = bcrypt;
     }
 
     @Override
     public NewUserRespDTO saveNewUser(NewUserDTO body) {
-        String u = requireNotBlank(body.username(), "username");
+        String u = requireNotBlank(body.userName(), "username");
         String e = requireNotBlank(body.email(), "email").toLowerCase();
         String p = requireNotBlank(body.password(), "password");
 
@@ -85,19 +51,31 @@ public class UserService implements IUserService {
             throw new IllegalArgumentException("Email already exists: " + e);
         }
 
-        User user = createUserByType("Technician");
+        User user = createUserByType(body.userType());
 
+        user.setFirstName(body.firstName());
+        user.setLastName(body.lastName());
         user.setUsername(u);
         user.setEmail(e);
         user.setPasswordHash(bcrypt.encode(p));
-        user.setFirstName(body.firstName());
-        user.setLastName(body.surname());
-        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.surname());
-        user.setRole(UserRole.USER);
+        user.setRole(body.role());
+        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.lastName());
         User saved = userRepository.save(user);
         this.mailgunSender.sendRegistrationEmail(saved);
         return new NewUserRespDTO(saved.getId());
     }
+
+    private User createUserByType(UserType userType) {
+        return switch (userType) {
+            case ADMINISTRATIVE -> new AdministrativeUser();
+            case TECHNICIAN -> new TechnicianUser();
+        };
+    }
+
+
+
+
+
 
 
     @Override
@@ -226,11 +204,7 @@ public class UserService implements IUserService {
         return userRepository.findByEmail(email);
     }
 
-    private User createUserByType(String userType) {
-        if ("ADMINISTRATIVE".equalsIgnoreCase(userType)) return new AdministrativeUser();
-        if ("TECHNICIAN".equalsIgnoreCase(userType)) return new TechnicianUser();
-        throw new IllegalArgumentException("Invalid user type: " + userType);
-    }
+
 
     private String requireNotBlank(String value, String field) {
         if (value == null || value.trim().isBlank()) {

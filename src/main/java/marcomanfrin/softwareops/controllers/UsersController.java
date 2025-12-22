@@ -12,15 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
 public class UsersController {
-    @Autowired
-    private IUserService usersService;
+    private final IUserService usersService;
+
+    public UsersController(IUserService usersService) {
+        this.usersService = usersService;
+    }
 
     @GetMapping
     public List<User> getUsers() {
@@ -35,18 +37,6 @@ public class UsersController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public User createUser(@RequestBody CreateUserRequest request) {
-        return usersService.createUser(
-                request.username(),
-                request.email(),
-                request.password(),
-                request.firstName(),
-                request.surname(),
-                request.role(),
-                request.userType()
-        );
-    }
 
     @PatchMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable UUID id, @RequestBody UpdateUserRequest request) {

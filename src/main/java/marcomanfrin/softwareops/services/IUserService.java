@@ -1,8 +1,8 @@
 package marcomanfrin.softwareops.services;
 
 import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
-import marcomanfrin.softwareops.DTO.NewUserDTO;
-import marcomanfrin.softwareops.DTO.NewUserRespDTO;
+import marcomanfrin.softwareops.DTO.registration.NewUserDTO;
+import marcomanfrin.softwareops.DTO.registration.NewUserRespDTO;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.Optional;
 
 public interface IUserService {
-    User createUser(String username, String email, String password, String firstName, String surname, UserRole role, String userType);
     Optional<User> getUserById(UUID id);
     Optional<User> getUserByUsername(String username);
     List<User> getAllUsers();
