@@ -11,6 +11,11 @@ import java.util.UUID;
 @Table(name = "works")
 public abstract class Work {
 
+    // Work ha senso come JOINED perché i sottotipi rappresentano concetti di dominio diversi
+    // (lavoro da impianto vs da ticket) che possono evolvere con campi e logiche specifiche.
+    //La strategia JOINED mantiene il database normalizzato, evitando colonne inutili
+    // o NULL quando i sottotipi iniziano a divergere.
+
     @Id
     @GeneratedValue
     private UUID id;

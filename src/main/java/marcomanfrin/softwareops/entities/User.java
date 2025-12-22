@@ -15,6 +15,12 @@ import java.util.UUID;
 @DiscriminatorColumn(name="user_type")
 public abstract class User implements UserDetails {
 
+    // User ha senso come SINGLE_TABLE perché le sottoclassi condividono quasi tutti i campi
+    // e si distinguono solo per ruolo/permessi: separarle in più tabelle introdurrebbe join
+    // inutili senza benefici reali.
+    //Inoltre le query su utenti sono frequenti e polimorfiche (login, lista utenti),
+    // e SINGLE_TABLE è la strategia più semplice e performante in questo scenario.
+
     @Id
     @GeneratedValue
     private UUID id;
