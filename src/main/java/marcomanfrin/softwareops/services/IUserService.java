@@ -1,6 +1,8 @@
 package marcomanfrin.softwareops.services;
 
 import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
+import marcomanfrin.softwareops.DTO.NewUserDTO;
+import marcomanfrin.softwareops.DTO.NewUserRespDTO;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
@@ -24,4 +26,6 @@ public interface IUserService {
     List<User> getUsersByRole(UserRole role);
     String uploadProfileImage(UUID userId, MultipartFile file);
     Optional<User> getUserByEmail(String email);
+
+    NewUserRespDTO saveNewUser(NewUserDTO body);
 }

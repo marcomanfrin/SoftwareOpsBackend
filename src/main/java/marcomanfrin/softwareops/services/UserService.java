@@ -4,6 +4,8 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import jakarta.persistence.EntityNotFoundException;
 import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
+import marcomanfrin.softwareops.DTO.NewUserDTO;
+import marcomanfrin.softwareops.DTO.NewUserRespDTO;
 import marcomanfrin.softwareops.entities.AdministrativeUser;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
@@ -11,6 +13,7 @@ import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.tools.MailgunSender;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +31,8 @@ public class UserService implements IUserService {
     private Cloudinary imageUploader;
     @Autowired
     private MailgunSender mailgunSender;
+    @Autowired
+    private PasswordEncoder bcrypt;
 
 
     public UserService(UserRepository userRepository) {
@@ -192,6 +197,34 @@ public class UserService implements IUserService {
     public Optional<User> getUserByEmail(String email) {
         if (email == null) return Optional.empty();
         return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public NewUserRespDTO saveNewUser(NewUserDTO body) {
+        String u = requireNotBlank(body.username(), "username");
+        String e = requireNotBlank(body.email(), "email").toLowerCase();
+        String p = requireNotBlank(body.password(), "password");
+
+        if (userRepository.existsByUsernameIgnoreCase(u)) {
+            throw new IllegalArgumentException("Username already exists: " + u);
+        }
+        if (userRepository.existsByEmailIgnoreCase(e)) {
+            throw new IllegalArgumentException("Email already exists: " + e);
+        }
+
+        User user = createUserByType("Technician");
+
+        user.setUsername(u);
+        user.setEmail(e);
+        // TOOD: hash password
+        user.setPasswordHash(p);
+        user.setFirstName(body.firstName());
+        user.setSurname(body.surname());
+        user.setProfileImageUrl("https://ui-avatars.com/api/?name=" + body.firstName() + "+" + body.surname());
+        user.setRole(UserRole.USER);
+        User saved = userRepository.save(user);
+        this.mailgunSender.sendRegistrationEmail(saved);
+        return new NewUserRespDTO(saved.getId());
     }
 
     private User createUserByType(String userType) {

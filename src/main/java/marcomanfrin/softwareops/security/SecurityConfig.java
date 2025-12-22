@@ -14,7 +14,7 @@ import java.util.List;
 
 @EnableWebSecurity
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity // for @PreAuthorize and @PostAuthorize
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
@@ -25,5 +25,10 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(req -> req.requestMatchers("/**").permitAll());
         httpSecurity.cors(Customizer.withDefaults());
         return httpSecurity.build();
+    }
+
+    @Bean
+    public PasswordEncoder getBCrypt() {
+        return new BCryptPasswordEncoder(12);
     }
 }

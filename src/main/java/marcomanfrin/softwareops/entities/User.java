@@ -2,24 +2,35 @@ package marcomanfrin.softwareops.entities;
 
 import jakarta.persistence.*;
 import marcomanfrin.softwareops.enums.UserRole;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "users")
-public abstract class User {
+public abstract class User implements UserDetails {
 
     @Id
     @GeneratedValue
     private UUID id;
-
     private String username;
     private String email;
     private String passwordHash;
     private String firstName;
     private String surname;
     private String ProfileImageUrl;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
 
     public UserRole getRole() {
         return role;
@@ -45,6 +56,7 @@ public abstract class User {
         return email;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -52,9 +64,6 @@ public abstract class User {
     public UUID getId() {
         return id;
     }
-
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
 
     public void setUsername(String username) {
         this.username = username;
