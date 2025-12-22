@@ -40,7 +40,15 @@ public class Ticket {
     @JoinColumn(name = "plant_id")
     private Plant plant;
 
-    // Ctor
+    public Ticket() {}
+
+    public Ticket(String name, String description, TicketStatus status, Client client, Plant plant) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.client = client;
+        this.plant = plant;
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -52,8 +60,6 @@ public class Ticket {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    // Getters and Setters
 
     public UUID getId() {
         return id;

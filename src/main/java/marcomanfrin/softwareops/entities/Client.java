@@ -20,7 +20,12 @@ public class Client {
     @Column(nullable = false)
     private ClientType type;
 
-    // Getters and Setters
+    public Client() {}
+
+    public Client(String name, ClientType type) {
+        this.name = name;
+        this.type = type;
+    }
 
     public UUID getId() {
         return id;

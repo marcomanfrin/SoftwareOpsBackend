@@ -32,15 +32,16 @@ public class AttachmentLink {
     @Column(name = "target_id", nullable = false)
     private UUID targetId;
 
-    // Ctor
+    public AttachmentLink() {}
 
-    // Getters and Setters
+    public AttachmentLink(Attachment attachment, AttachmentTargetType targetType, UUID targetId) {
+        this.attachment = attachment;
+        this.targetType = targetType;
+        this.targetId = targetId;
+    }
 
     public UUID getId() {
         return id;
-    }
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public Attachment getAttachment() {

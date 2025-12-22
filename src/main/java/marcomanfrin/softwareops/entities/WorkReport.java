@@ -51,14 +51,19 @@ public class WorkReport {
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkReportEntry> entries = new ArrayList<>();
 
-    // Ctor
+    public WorkReport() {}
+
+    public WorkReport(Work work, Ticket ticket, BigDecimal totalHours, List<WorkReportEntry> entries) {
+        this.work = work;
+        this.ticket = ticket;
+        this.totalHours = totalHours;
+        this.entries = entries;
+    }
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
-    // Getters and Setters
 
     public UUID getId() {
         return id;

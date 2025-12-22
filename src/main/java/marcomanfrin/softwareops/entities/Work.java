@@ -33,7 +33,12 @@ public abstract class Work {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    protected Work() {}
+    public Work() {}
+
+    public Work(WorkStatus status, int progressPercent) {
+        this.status = status;
+        this.progressPercent = progressPercent;
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -46,7 +51,7 @@ public abstract class Work {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
+
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;

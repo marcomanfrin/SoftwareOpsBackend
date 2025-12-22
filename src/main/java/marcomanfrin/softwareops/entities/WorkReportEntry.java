@@ -23,8 +23,13 @@ public class WorkReportEntry {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal hours = BigDecimal.ZERO;
 
+    public WorkReportEntry() {}
 
-    // Getters and Setters
+    public WorkReportEntry(WorkReport report, Task task, BigDecimal hours) {
+        this.report = report;
+        this.task = task;
+        this.hours = hours;
+    }
 
     public UUID getId() {
         return id;

@@ -37,14 +37,19 @@ public class WorkAssignment {
     @Column(nullable = false)
     private AssignmentRole assignmentRole;
 
-    // Ctor
+    public WorkAssignment() {}
+
+    public WorkAssignment(Work work, User user, AssignmentRole assignmentRole) {
+        this.work = work;
+        this.user = user;
+        this.assignmentRole = assignmentRole;
+    }
 
     @PrePersist
     protected void onCreate() {
         this.assignedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
 
     public UUID getId() {
         return id;

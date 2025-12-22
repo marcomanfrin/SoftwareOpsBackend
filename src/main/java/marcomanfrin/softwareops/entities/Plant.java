@@ -35,7 +35,13 @@ public class Plant {
     @JoinColumn(name = "final_client_id")
     private Client finalClient;
 
-    // Getters and Setters
+    public Plant() {}
+
+    public Plant(String name, String notes, String orderNumber) {
+        this.name = name;
+        this.notes = notes;
+        this.orderNumber = orderNumber;
+    }
 
     public UUID getId() {
         return id;

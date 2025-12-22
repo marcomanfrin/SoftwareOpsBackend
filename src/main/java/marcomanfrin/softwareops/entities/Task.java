@@ -24,9 +24,13 @@ public class Task {
     @JoinColumn(name = "work_id", nullable = false)
     private Work work;
 
-    // Ctor
+    public Task() {}
 
-    // Getters and Setters
+    public Task(String text, TaskStatus status, Work work) {
+        this.text = text;
+        this.status = status;
+        this.work = work;
+    }
 
     public UUID getId() {
         return id;

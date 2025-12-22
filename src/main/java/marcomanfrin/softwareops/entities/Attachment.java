@@ -32,20 +32,22 @@ public class Attachment {
     @Column(nullable = false, updatable = false)
     private LocalDateTime uploadedAt;
 
-    // Ctor
+    public Attachment() {}
+
+    public Attachment(String url, String publicId, String resourceType, AttachmentType type) {
+        this.url = url;
+        this.publicId = publicId;
+        this.resourceType = resourceType;
+        this.type = type;
+    }
 
     @PrePersist
     protected void onCreate() {
         this.uploadedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-
     public UUID getId() {
         return id;
-    }
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getUrl() {
