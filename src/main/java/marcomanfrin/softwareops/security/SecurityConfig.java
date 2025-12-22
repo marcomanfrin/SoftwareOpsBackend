@@ -22,15 +22,21 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity // for @PreAuthorize and @PostAuthorize
 public class SecurityConfig {
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
 
-        httpSecurity.formLogin(formLogin -> formLogin.disable());
-        httpSecurity.sessionManagement(sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        httpSecurity.csrf(csrf -> csrf.disable());
-        httpSecurity.authorizeHttpRequests(req -> req.requestMatchers("/**").permitAll());
-        httpSecurity.cors(Customizer.withDefaults());
-        return httpSecurity.build();
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JWTAuthFilter jwtAuthFilter) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(f -> f.disable())
+                .httpBasic(b -> b.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean

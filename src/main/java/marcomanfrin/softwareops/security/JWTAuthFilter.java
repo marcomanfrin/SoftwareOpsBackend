@@ -29,41 +29,43 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		try {
-            // AUTHENTICATION
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-			String authorizationHeader = request.getHeader("Authorization");
+        try {
+            String authHeader = request.getHeader("Authorization");
 
-            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
+            // Se manca o è malformato -> 401 (MA SOLO se non sei su una rotta pubblica)
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token mancante o non valido");
                 return;
             }
 
-			String accessToken = authorizationHeader.replace("Bearer ", "");
+            String token = authHeader.substring(7);
 
-			jwtTools.verifyToken(accessToken);
+            jwtTools.verifyToken(token);
 
-            // AUTHORIZATION
+            UUID userId = jwtTools.getIDFromToken(token);
 
-			UUID userId = jwtTools.getIDFromToken(accessToken);
-			User found = this.userService.getUserById(userId).get();
+            User user = userService.getUserById(userId)
+                    .orElseThrow(() -> new UnauthorizedException("Utente non trovato"));
 
-			Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    found,
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    user,
                     null,
-                    found.getAuthorities());
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+                    user.getAuthorities()
+            );
 
-			filterChain.doFilter(request, response);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		} catch (UnauthorizedException ex) {
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
-		} catch (Exception ex) {
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Problemi col token!");
-		}
+            chain.doFilter(request, response);
 
-	}
+        } catch (UnauthorizedException ex) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+        } catch (Exception ex) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Problemi col token!");
+        }
+    }
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
