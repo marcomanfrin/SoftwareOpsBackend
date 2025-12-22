@@ -5,55 +5,54 @@ import marcomanfrin.softwareops.enums.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "users")
+@Table(name="users")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="user_type")
 public abstract class User implements UserDetails {
 
     @Id
     @GeneratedValue
     private UUID id;
+
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    @Column(nullable = false)
     private String firstName;
-    private String surname;
-    private String ProfileImageUrl;
+
+    @Column(nullable = false)
+    private String lastName;
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UserRole role;
+
+    protected User() {}
+
+    // UserDetails
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    public UserRole getRole() {
-        return role;
-    }
-
-    public String getProfileImageUrl() {
-        return ProfileImageUrl;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getPasswordHash() {
+    @Override
+    public String getPassword() {
         return passwordHash;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     @Override
@@ -61,34 +60,57 @@ public abstract class User implements UserDetails {
         return username;
     }
 
+    // Getters and Setters
+
     public UUID getId() {
         return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
+    public String getEmail() {
+        return email;
+    }
     public void setEmail(String email) {
         this.email = email;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
     public void setProfileImageUrl(String profileImageUrl) {
-        ProfileImageUrl = profileImageUrl;
+        this.profileImageUrl = profileImageUrl;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
     public void setRole(UserRole role) {
         this.role = role;
     }

@@ -14,34 +14,67 @@ public abstract class Work {
     @Id
     @GeneratedValue
     private UUID id;
+
     @Enumerated(EnumType.STRING)
-    private WorkStatus status;
+    @Column(nullable = false)
+    private WorkStatus status  = WorkStatus.DRAFT;
 
-    public WorkStatus getStatus() {
-        return status;
-    }
+    @Column(nullable = false)
+    private int progressPercent = 0;
 
-    private int progressPercent;
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public UUID getId() {
-        return id;
+    protected Work() {}
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
     }
 
-    public void setStatus(WorkStatus status) {
-        this.status = status;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setProgressPercent(int progressPercent) {
-        this.progressPercent = progressPercent;
+    // Getters and Setters
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public int getProgressPercent() {
+        return progressPercent;
+    }
+    public void setProgressPercent(int progressPercent) {
+        this.progressPercent = progressPercent;
+    }
+
+    public WorkStatus getStatus() {
+        return status;
+    }
+    public void setStatus(WorkStatus status) {
+        this.status = status;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
     }
 }
