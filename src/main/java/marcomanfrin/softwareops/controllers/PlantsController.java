@@ -5,22 +5,25 @@ import marcomanfrin.softwareops.DTO.plants.CreatePlantRequest;
 import marcomanfrin.softwareops.DTO.plants.PlantResponse;
 import marcomanfrin.softwareops.DTO.plants.UpdatePlantRequest;
 import marcomanfrin.softwareops.DTO.works.WorkResponse;
-import marcomanfrin.softwareops.entities.Plant;
-import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.services.IPlantService;
 import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/plants")
 public class PlantsController {
+
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 100;
 
     @Autowired
     private IPlantService plantService;
@@ -37,8 +40,12 @@ public class PlantsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PlantResponse>> getAllPlants() {
-        return ResponseEntity.ok(plantService.getAllPlants());
+    public ResponseEntity<Page<PlantResponse>> getAllPlants(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size
+    ) {
+        PageRequest pageRequest = buildPageRequest(page, size, Sort.by("name").ascending());
+        return ResponseEntity.ok(plantService.getAllPlants(pageRequest));
     }
 
     @GetMapping("/{id}")
@@ -68,13 +75,23 @@ public class PlantsController {
     }
 
     @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<PlantResponse>> getPlantsByClient(@PathVariable UUID clientId) {
-        return ResponseEntity.ok(plantService.getPlantsByClient(clientId));
+    public ResponseEntity<Page<PlantResponse>> getPlantsByClient(
+            @PathVariable UUID clientId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size
+    ) {
+        PageRequest pageRequest = buildPageRequest(page, size, Sort.by("name").ascending());
+        return ResponseEntity.ok(plantService.getPlantsByClient(clientId, pageRequest));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<PlantResponse>> searchPlants(@RequestParam("query") String query) {
-        return ResponseEntity.ok(plantService.searchPlants(query));
+    public ResponseEntity<Page<PlantResponse>> searchPlants(
+            @RequestParam("query") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size
+    ) {
+        PageRequest pageRequest = buildPageRequest(page, size, Sort.by("name").ascending());
+        return ResponseEntity.ok(plantService.searchPlants(query, pageRequest));
     }
 
     @PostMapping("/{id}/works")
@@ -84,5 +101,11 @@ public class PlantsController {
         return ResponseEntity
                 .created(URI.create("/works/" + created.id()))
                 .body(created);
+    }
+
+    private PageRequest buildPageRequest(int page, int size, Sort sort) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size < 1 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
+        return PageRequest.of(safePage, safeSize, sort);
     }
 }

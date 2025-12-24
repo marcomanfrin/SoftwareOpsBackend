@@ -7,17 +7,20 @@ import marcomanfrin.softwareops.enums.WorkStatus;
 import marcomanfrin.softwareops.services.IWorkAssignmentService;
 import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/works")
 public class WorksController {
+
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 100;
 
     @Autowired
     private IWorkService workService;
@@ -26,27 +29,13 @@ public class WorksController {
     private IWorkAssignmentService workAssignmentService;
 
     @GetMapping
-    public List<Work> getWorks(
+    public Page<Work> getWorks(
             @RequestParam(required = false) WorkStatus status,
-            @RequestParam(required = false) UUID technicianId) {
-
-        // In-memory filtering is not efficient. A dedicated service method with pagination and filtering would be better.
-        List<Work> works = workService.getAllWorks();
-        Stream<Work> stream = works.stream();
-
-        if (status != null) {
-            stream = stream.filter(work -> work.getStatus() == status);
-        }
-
-        if (technicianId != null) {
-            List<UUID> workIds = workAssignmentService.getAssignmentsByTechnicianId(technicianId)
-                    .stream()
-                    .map(assignment -> assignment.getWork().getId())
-                    .toList();
-            stream = stream.filter(work -> workIds.contains(work.getId()));
-        }
-
-        return stream.collect(Collectors.toList());
+            @RequestParam(required = false) UUID technicianId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size) {
+        PageRequest pageRequest = buildPageRequest(page, size, Sort.by("createdAt").descending());
+        return workService.getWorks(status, technicianId, pageRequest);
     }
 
     @GetMapping("/{id}")
@@ -54,6 +43,12 @@ public class WorksController {
         return workService.getWorkById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private PageRequest buildPageRequest(int page, int size, Sort sort) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size < 1 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
+        return PageRequest.of(safePage, safeSize, sort);
     }
 
     @PatchMapping("/{id}")

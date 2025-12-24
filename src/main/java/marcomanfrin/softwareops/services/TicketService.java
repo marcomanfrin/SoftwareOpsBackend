@@ -6,6 +6,8 @@ import marcomanfrin.softwareops.entities.Ticket;
 import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.TicketRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,11 @@ public class TicketService implements ITicketService {
     @Override
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
+    }
+
+    @Override
+    public Page<Ticket> getAllTickets(Pageable pageable) {
+        return ticketRepository.findAll(pageable);
     }
 
     @Transactional
@@ -121,6 +128,21 @@ public class TicketService implements ITicketService {
     @Override
     public List<Ticket> getTicketsByPlant(UUID plantId) {
         return ticketRepository.findByPlant_Id(plantId);
+    }
+
+    @Override
+    public Page<Ticket> getTicketsByStatus(TicketStatus status, Pageable pageable) {
+        return ticketRepository.findByStatus(status, pageable);
+    }
+
+    @Override
+    public Page<Ticket> getTicketsByClient(UUID clientId, Pageable pageable) {
+        return ticketRepository.findByClient_Id(clientId, pageable);
+    }
+
+    @Override
+    public Page<Ticket> getTicketsByPlant(UUID plantId, Pageable pageable) {
+        return ticketRepository.findByPlant_Id(plantId, pageable);
     }
 
     private void applyStatusChange(Ticket ticket, TicketStatus nextStatus) {

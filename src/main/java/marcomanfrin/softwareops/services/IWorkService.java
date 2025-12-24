@@ -5,6 +5,8 @@ import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.entities.WorkFromPlant;
 import marcomanfrin.softwareops.entities.WorkFromTicket;
 import marcomanfrin.softwareops.enums.WorkStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +18,7 @@ public interface IWorkService {
 
     Optional<Work> getWorkById(UUID id);
     List<Work> getAllWorks();
+    Page<Work> getWorks(WorkStatus status, UUID technicianId, Pageable pageable);
     void deleteWork(UUID id);
 
     Work assignTechnician(UUID workId, UUID technicianId);

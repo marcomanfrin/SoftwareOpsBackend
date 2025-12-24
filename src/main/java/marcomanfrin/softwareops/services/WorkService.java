@@ -7,6 +7,8 @@ import marcomanfrin.softwareops.enums.TaskStatus;
 import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.enums.WorkStatus;
 import marcomanfrin.softwareops.repositories.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -77,6 +79,20 @@ public class WorkService implements IWorkService {
     @Override
     public List<Work> getAllWorks() {
         return workRepository.findAll();
+    }
+
+    @Override
+    public Page<Work> getWorks(WorkStatus status, UUID technicianId, Pageable pageable) {
+        if (status != null && technicianId != null) {
+            return workRepository.findWorksByTechnicianIdAndStatus(technicianId, status, pageable);
+        }
+        if (status != null) {
+            return workRepository.findByStatus(status, pageable);
+        }
+        if (technicianId != null) {
+            return workRepository.findWorksByTechnicianId(technicianId, pageable);
+        }
+        return workRepository.findAll(pageable);
     }
 
     @Override

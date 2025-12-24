@@ -10,6 +10,8 @@ import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.exceptions.ValidationException;
 import marcomanfrin.softwareops.repositories.ClientRepository;
 import marcomanfrin.softwareops.repositories.PlantRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,6 +76,13 @@ public class PlantService implements IPlantService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<PlantResponse> getAllPlants(Pageable pageable) {
+        return plantRepository.findAll(pageable)
+                .map(this::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PlantResponse getPlantById(UUID id) {
         if (id == null) throw new ValidationException(List.of("Plant id è obbligatorio"));
         return plantRepository.findById(id).map(this::toResponse)
@@ -131,6 +140,13 @@ public class PlantService implements IPlantService {
     }
 
     @Override
+    public Page<PlantResponse> getPlantsByClient(UUID clientId, Pageable pageable) {
+        return plantRepository
+                .findDistinctByPrimaryClient_IdOrFinalClient_Id(clientId, clientId, pageable)
+                .map(this::toResponse);
+    }
+
+    @Override
     public List<PlantResponse> searchPlants(String query) {
         String q = (query == null) ? "" : query.trim();
         if (q.isBlank()) return getAllPlants();
@@ -139,6 +155,15 @@ public class PlantService implements IPlantService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<PlantResponse> searchPlants(String query, Pageable pageable) {
+        String q = (query == null) ? "" : query.trim();
+        if (q.isBlank()) return getAllPlants(pageable);
+        return plantRepository
+                .search(q, pageable)
+                .map(this::toResponse);
     }
 
     private String normalize(String value) {
