@@ -1,13 +1,13 @@
 package marcomanfrin.softwareops.DTO.dashboard;
 
-import java.time.LocalDate;
+import marcomanfrin.softwareops.enums.TicketStatus;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record TicketPreviewDTO(
         UUID id,
-        String title,
-        String status,
+        TicketStatus status,
         LocalDateTime createdAt
 ) {
 }

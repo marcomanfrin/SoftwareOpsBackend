@@ -13,16 +13,18 @@ type WorkStatusCount { status: WorkStatus! count: Int! }
 type TicketStatusCount { status: TicketStatus! count: Int! }
 
 enum WorkStatus {
-    # metti ESATTAMENTE i valori del tuo WorkStatus Java
-    OPEN
+    DRAFT
+    SCHEDULED
     IN_PROGRESS
-    DONE
+    COMPLETED
+    CANCELLED
 }
 
 enum TicketStatus {
     OPEN
     IN_PROGRESS
-    DONE
+    RESOLVED
+    CLOSED
 }
 
 type WorkPreview {

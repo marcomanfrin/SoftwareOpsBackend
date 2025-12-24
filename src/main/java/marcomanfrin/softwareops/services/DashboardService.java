@@ -50,11 +50,11 @@ public class DashboardService {
         var page = PageRequest.of(0, safeLimit);
 
         List<WorkPreviewDTO> lastWorks = workRepository.findAllByOrderByCreatedAtDesc(page).stream()
-                .map(w -> new WorkPreviewDTO(w.getId(), w.getTitle(), w.getStatus()==WorkStatus.COMPLETED, w.getCreatedAt()))
+                .map(w -> new WorkPreviewDTO(w.getId(), w.getStatus(), w.getCreatedAt()))
                 .toList();
 
         List<TicketPreviewDTO> lastTickets = ticketRepository.findAllByOrderByCreatedAtDesc(page).stream()
-                .map(t -> new TicketPreviewDTO(t.getId(), t.getName(), t.getStatus().toString(), t.getCreatedAt()))
+                .map(t -> new TicketPreviewDTO(t.getId(), t.getStatus(), t.getCreatedAt()))
                 .toList();
 
         return new DashboardSummaryDTO(
