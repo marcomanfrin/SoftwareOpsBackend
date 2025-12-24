@@ -1,4 +1,6 @@
 package marcomanfrin.softwareops.DTO.tickets;
 
-public record CreateTicketRequest(String name, String description) {
+import jakarta.validation.constraints.NotBlank;
+
+public record CreateTicketRequest(@NotBlank String name, String description) {
 }

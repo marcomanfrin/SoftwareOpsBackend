@@ -1,13 +1,16 @@
 package marcomanfrin.softwareops.services;
 
+import marcomanfrin.softwareops.DTO.tickets.CreateTicketRequest;
+import marcomanfrin.softwareops.DTO.tickets.UpdateTicketRequest;
 import marcomanfrin.softwareops.entities.Ticket;
 import marcomanfrin.softwareops.enums.TicketStatus;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.TicketRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,22 +23,21 @@ public class TicketService implements ITicketService {
     }
 
     @Override
-    public Ticket createTicket(String name, String description) {
-        String n = validateName(name);
+    public Ticket createTicket(CreateTicketRequest request) {
+        String name = validateName(request.name());
 
         Ticket ticket = new Ticket();
-        ticket.setName(n);
-        ticket.setDescription(description);
+        ticket.setName(name);
+        ticket.setDescription(request.description());
         ticket.setStatus(TicketStatus.OPEN);
         ticket.setCreatedAt(LocalDateTime.now());
         ticket.setUpdatedAt(LocalDateTime.now());
-
         return ticketRepository.save(ticket);
     }
 
     @Override
-    public Optional<Ticket> getTicketById(UUID id) {
-        return ticketRepository.findById(id);
+    public Ticket getTicketOrThrow(UUID id) {
+        return ticketRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
     @Override
@@ -43,23 +45,39 @@ public class TicketService implements ITicketService {
         return ticketRepository.findAll();
     }
 
+    @Transactional
     @Override
-    public Ticket updateTicket(UUID id, String name, String description) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found: " + id));
+    public Ticket patchTicket(UUID id, UpdateTicketRequest request) {
+        Ticket ticket = getTicketOrThrow(id);
 
-        ticket.setName(validateName(name));
-        ticket.setDescription(description);
-        ticket.setUpdatedAt(LocalDateTime.now());
+        boolean changed = false;
 
-        return ticketRepository.save(ticket);
+        if (request.name() != null) {
+            ticket.setName(validateName(request.name()));
+            changed = true;
+        }
+
+        if (request.description() != null) {
+            ticket.setDescription(request.description());
+            changed = true;
+        }
+
+        if (request.status() != null && request.status() != ticket.getStatus()) {
+            applyStatusChange(ticket, request.status());
+            changed = true;
+        }
+
+        if (changed) {
+            ticket.setUpdatedAt(LocalDateTime.now());
+            return ticketRepository.save(ticket);
+        }
+
+        return ticket;
     }
 
     @Override
     public void deleteTicket(UUID id) {
-        if (!ticketRepository.existsById(id)) {
-            throw new RuntimeException("Ticket not found: " + id);
-        }
+        if (!ticketRepository.existsById(id)) throw new NotFoundException(id);
         ticketRepository.deleteById(id);
     }
 
@@ -73,7 +91,6 @@ public class TicketService implements ITicketService {
         }
         ticket.setStatus(status);
 
-        // se passa a DONE, set resolvedAt
          if (status == TicketStatus.CLOSED && ticket.getResolvedAt() == null) {
              ticket.setResolvedAt(LocalDateTime.now());
          }
@@ -83,12 +100,16 @@ public class TicketService implements ITicketService {
 
     @Override
     public Ticket closeTicket(UUID ticketId) {
-        return changeTicketStatus(ticketId, TicketStatus.CLOSED);
+        Ticket ticket = getTicketOrThrow(ticketId);
+        if (ticket.getStatus() == TicketStatus.CLOSED) return ticket;
+
+        applyStatusChange(ticket, TicketStatus.CLOSED);
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     @Override
     public List<Ticket> getTicketsByStatus(TicketStatus status) {
-        if (status == null) throw new IllegalArgumentException("Status cannot be null");
         return ticketRepository.findByStatus(status);
     }
 
@@ -100,6 +121,13 @@ public class TicketService implements ITicketService {
     @Override
     public List<Ticket> getTicketsByPlant(UUID plantId) {
         return ticketRepository.findByPlant_Id(plantId);
+    }
+
+    private void applyStatusChange(Ticket ticket, TicketStatus nextStatus) {
+        ticket.setStatus(nextStatus);
+        if (nextStatus == TicketStatus.CLOSED && ticket.getResolvedAt() == null) {
+            ticket.setResolvedAt(LocalDateTime.now());
+        }
     }
 
     private String validateName(String name) {

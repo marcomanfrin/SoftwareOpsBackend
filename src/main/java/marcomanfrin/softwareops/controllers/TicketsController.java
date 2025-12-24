@@ -1,6 +1,8 @@
 package marcomanfrin.softwareops.controllers;
 
+import jakarta.validation.Valid;
 import marcomanfrin.softwareops.DTO.tickets.CreateTicketRequest;
+import marcomanfrin.softwareops.DTO.tickets.TicketResponse;
 import marcomanfrin.softwareops.DTO.tickets.UpdateTicketRequest;
 import marcomanfrin.softwareops.entities.Ticket;
 import marcomanfrin.softwareops.entities.Work;
@@ -8,7 +10,9 @@ import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.services.ITicketService;
 import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,74 +29,78 @@ public class TicketsController {
     private IWorkService workService;
 
     @PostMapping
-    public Ticket createTicket(@RequestBody CreateTicketRequest request) {
-        return ticketService.createTicket(request.name(), request.description());
+    @ResponseStatus(HttpStatus.CREATED)
+    public TicketResponse createTicket(@Valid @RequestBody CreateTicketRequest request) {
+        Ticket ticket = ticketService.createTicket(request);
+        return toResponse(ticket);
     }
 
     @GetMapping
-    public List<Ticket> getAllTickets() {
-        return ticketService.getAllTickets();
+    public List<TicketResponse> getAllTickets(
+            @RequestParam(name = "status", required = false) TicketStatus status,
+            @RequestParam(name = "clientId", required = false) UUID clientId,
+            @RequestParam(name = "plantId", required = false) UUID plantId
+    ) {
+        List<Ticket> tickets;
+
+        if (status != null) {
+            tickets = ticketService.getTicketsByStatus(status);
+        } else if (clientId != null) {
+            tickets = ticketService.getTicketsByClient(clientId);
+        } else if (plantId != null) {
+            tickets = ticketService.getTicketsByPlant(plantId);
+        } else {
+            tickets = ticketService.getAllTickets();
+        }
+
+        return tickets.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<Ticket> getTicketById(@PathVariable UUID id) {
-        return ticketService.getTicketById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public TicketResponse getTicketById(@PathVariable UUID id) {
+        return toResponse(ticketService.getTicketOrThrow(id));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Ticket> updateTicket(@PathVariable UUID id, @RequestBody UpdateTicketRequest request) {
-        Ticket updated = null;
-        if (request.name() != null || request.description() != null) {
-            updated = ticketService.updateTicket(id, request.name(), request.description());
-        }
-        if (request.status() != null) {
-           updated = ticketService.changeTicketStatus(id, request.status());
-        }
-
-        if(updated != null){
-            return ResponseEntity.ok(updated);
-        }
-
-        // if nothing to update, just return the ticket
-        return ticketService.getTicketById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTicket(@PathVariable UUID id) {
-        ticketService.deleteTicket(id);
-        return ResponseEntity.noContent().build();
+    public TicketResponse patchTicket(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateTicketRequest request
+    ) {
+        return toResponse(ticketService.patchTicket(id, request));
     }
 
     @PostMapping("/{id}/close")
-    public ResponseEntity<Ticket> closeTicket(@PathVariable UUID id) {
-        Ticket closedTicket = ticketService.closeTicket(id);
-        if (closedTicket != null) {
-            return ResponseEntity.ok(closedTicket);
-        }
-        return ResponseEntity.notFound().build();
+    public TicketResponse closeTicket(@PathVariable UUID id) {
+        return toResponse(ticketService.closeTicket(id));
     }
 
-    @GetMapping("/status/{status}")
-    public List<Ticket> getTicketsByStatus(@PathVariable TicketStatus status) {
-        return ticketService.getTicketsByStatus(status);
-    }
-
-    @GetMapping("/client/{clientId}")
-    public List<Ticket> getTicketsByClient(@PathVariable UUID clientId) {
-        return ticketService.getTicketsByClient(clientId);
-    }
-
-    @GetMapping("/plant/{plantId}")
-    public List<Ticket> getTicketsByPlant(@PathVariable UUID plantId) {
-        return ticketService.getTicketsByPlant(plantId);
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteTicket(@PathVariable UUID id) {
+        ticketService.deleteTicket(id);
     }
 
     @PostMapping("/{id}/works")
+    @ResponseStatus(HttpStatus.CREATED)
     public Work createWorkFromTicket(@PathVariable UUID id) {
         return workService.createWorkFromTicket(id);
+    }
+
+    private TicketResponse toResponse(Ticket ticket) {
+        return new TicketResponse(
+                ticket.getId(),
+                ticket.getName(),
+                ticket.getDescription(),
+                ticket.getStatus(),
+                ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
+                ticket.getResolvedAt(),
+                ticket.getClient() != null ? ticket.getClient().getId() : null,
+                ticket.getPlant() != null ? ticket.getPlant().getId() : null
+        );
     }
 }

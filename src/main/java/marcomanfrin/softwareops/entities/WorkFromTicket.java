@@ -1,16 +1,15 @@
 package marcomanfrin.softwareops.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "work_from_ticket")
 public class WorkFromTicket extends Work {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "ticket_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
+    @JsonIgnore
     private Ticket ticket;
 
     public Ticket getTicket() {

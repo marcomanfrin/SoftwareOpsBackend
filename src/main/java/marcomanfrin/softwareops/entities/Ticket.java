@@ -1,5 +1,6 @@
 package marcomanfrin.softwareops.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import marcomanfrin.softwareops.enums.TicketStatus;
 
@@ -30,7 +31,7 @@ public class Ticket {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    private LocalDateTime ResolvedAt;
+    private LocalDateTime resolvedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "client_id")
@@ -39,6 +40,10 @@ public class Ticket {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "plant_id")
     private Plant plant;
+
+    @OneToOne(mappedBy = "ticket", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonIgnore
+    private WorkFromTicket workFromTicket;
 
     public Ticket() {}
 
@@ -104,10 +109,10 @@ public class Ticket {
     }
 
     public LocalDateTime getResolvedAt() {
-        return ResolvedAt;
+        return resolvedAt;
     }
     public void setResolvedAt(LocalDateTime resolvedAt) {
-        ResolvedAt = resolvedAt;
+        this.resolvedAt = resolvedAt;
     }
 
     public Client getClient() {
@@ -123,4 +128,12 @@ public class Ticket {
     public void setPlant(Plant plant) {
         this.plant = plant;
     }
+
+    public WorkFromTicket getWorkFromTicket() {
+        return workFromTicket;
+    }
+    public void setWorkFromTicket(WorkFromTicket workFromTicket) {
+        this.workFromTicket = workFromTicket;
+    }
+
 }
