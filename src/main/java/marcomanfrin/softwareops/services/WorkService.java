@@ -1,12 +1,12 @@
 package marcomanfrin.softwareops.services;
 
+import marcomanfrin.softwareops.DTO.works.WorkResponse;
 import marcomanfrin.softwareops.entities.*;
 import marcomanfrin.softwareops.enums.AssignmentRole;
 import marcomanfrin.softwareops.enums.TaskStatus;
 import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.enums.WorkStatus;
 import marcomanfrin.softwareops.repositories.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,7 +34,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
-    public Work createWorkFromPlant(UUID plantId) {
+    public WorkResponse createWorkFromPlant(UUID plantId) {
         Plant plant = plantRepository.findById(plantId)
                 .orElseThrow(() -> new RuntimeException("Plant not found: " + plantId));
 
@@ -44,8 +44,8 @@ public class WorkService implements IWorkService {
         work.setProgressPercent(0);
         work.setCreatedAt(LocalDateTime.now());
         work.setUpdatedAt(LocalDateTime.now());
-
-        return workRepository.save(work);
+        var savedWork = workRepository.save(work);
+        return new WorkResponse(savedWork.getId());
     }
 
     @Override

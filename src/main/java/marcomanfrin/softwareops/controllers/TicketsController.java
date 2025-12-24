@@ -79,7 +79,7 @@ public class TicketsController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
     public void deleteTicket(@PathVariable UUID id) {
         ticketService.deleteTicket(id);
     }

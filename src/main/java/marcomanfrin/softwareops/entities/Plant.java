@@ -1,8 +1,12 @@
 package marcomanfrin.softwareops.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import marcomanfrin.softwareops.DTO.plants.PlantResponse;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,6 +38,22 @@ public class Plant {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "final_client_id")
     private Client finalClient;
+
+    @OneToMany(mappedBy = "plant")
+    @JsonIgnore
+    private List<WorkFromPlant> worksFromPlant = new ArrayList<>();
+
+    public List<WorkFromPlant> getWorksFromPlant() { return worksFromPlant; }
+
+    public void addWorkFromPlant(WorkFromPlant work) {
+        worksFromPlant.add(work);
+        work.setPlant(this);
+    }
+
+    public void removeWorkFromPlant(WorkFromPlant work) {
+        worksFromPlant.remove(work);
+        work.setPlant(null);
+    }
 
     public Plant() {}
 

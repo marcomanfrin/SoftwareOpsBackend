@@ -1,16 +1,15 @@
 package marcomanfrin.softwareops.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "work_from_plant")
 public class WorkFromPlant extends Work {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "plant_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plant_id", nullable = true)
+    @JsonIgnore
     private Plant plant;
 
     public Plant getPlant() {

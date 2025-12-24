@@ -1,15 +1,20 @@
 package marcomanfrin.softwareops.services;
 
+import marcomanfrin.softwareops.DTO.plants.CreatePlantRequest;
+import marcomanfrin.softwareops.DTO.plants.PlantResponse;
+import marcomanfrin.softwareops.DTO.plants.UpdatePlantRequest;
 import marcomanfrin.softwareops.entities.Client;
 import marcomanfrin.softwareops.entities.Plant;
+import marcomanfrin.softwareops.entities.WorkFromPlant;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
+import marcomanfrin.softwareops.exceptions.ValidationException;
 import marcomanfrin.softwareops.repositories.ClientRepository;
 import marcomanfrin.softwareops.repositories.PlantRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -24,94 +29,139 @@ public class PlantService implements IPlantService {
     }
 
     @Override
-    public Plant createPlant(String name, String notes, String orderNumber, UUID primaryClientId, UUID finalClientId) {
-        if (name == null || name.trim().isBlank()) {
-            throw new IllegalArgumentException("Plant name cannot be blank");
-        }
-        if (orderNumber == null || orderNumber.trim().isBlank()) {
-            throw new IllegalArgumentException("Order number cannot be blank");
-        }
+    public PlantResponse createPlant(CreatePlantRequest request) {
+        List<String> errors = new ArrayList<>();
 
-        Client primaryClient = clientRepository.findById(primaryClientId)
-                .orElseThrow(() -> new RuntimeException("Primary client not found"));
-        Client finalClient = clientRepository.findById(finalClientId)
-                .orElseThrow(() -> new RuntimeException("Final client not found"));
+        String normalizedName = normalize(request.name());
+        String normalizedOrder = normalize(request.orderNumber());
+        String normalizedNotes = normalizeNullable(request.notes());
+
+        if (normalizedName == null) errors.add("Plant name è obbligatorio");
+        if (normalizedOrder == null) errors.add("Order number è obbligatorio");
+        if (request.primaryClientId() == null) errors.add("Primary client id è obbligatorio");
+
+        if (!errors.isEmpty()) throw new ValidationException(errors);
+
+        Client primaryClient = clientRepository.findById(request.primaryClientId())
+                .orElseThrow(() -> new NotFoundException("Primary client non trovato: " + request.primaryClientId()));
+
+        Client finalClient = null;
+        if (request.finalClientId() != null) {
+            finalClient = clientRepository.findById(request.finalClientId())
+                    .orElseThrow(() -> new NotFoundException("Final client non trovato: " + request.finalClientId()));
+        }
 
         Plant plant = new Plant();
-        plant.setName(name.trim());
-        plant.setNotes(notes);
-        plant.setOrderNumber(orderNumber.trim());
+        plant.setName(normalizedName);
+        plant.setNotes(normalizedNotes);
+        plant.setOrderNumber(normalizedOrder);
         plant.setPrimaryClient(primaryClient);
         plant.setFinalClient(finalClient);
         plant.setInvoiced(false);
         plant.setInvoicedAt(null);
-
-        return plantRepository.save(plant);
+        var saved = plantRepository.save(plant);
+        return toResponse(saved);
     }
 
     @Override
-    public Optional<Plant> getPlantById(UUID id) {
-        return plantRepository.findById(id);
+    @Transactional(readOnly = true)
+    public List<PlantResponse> getAllPlants() {
+        return plantRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
-    public List<Plant> getAllPlants() {
-        return plantRepository.findAll();
+    @Transactional(readOnly = true)
+    public PlantResponse getPlantById(UUID id) {
+        if (id == null) throw new ValidationException(List.of("Plant id è obbligatorio"));
+        return plantRepository.findById(id).map(this::toResponse)
+                .orElseThrow(() -> new NotFoundException("Plant non trovato: " + id));
     }
 
     @Override
-    public Plant updatePlant(UUID id, String name, String notes, String orderNumber) {
-        Plant plant = plantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plant not found"));
+    public PlantResponse updatePlant(UUID id, UpdatePlantRequest request) {
+        Plant plant = plantRepository.findById(id).orElseThrow(() -> new NotFoundException("Plant non trovato: " + id));
 
-        if (name != null && !name.trim().isBlank()) {
-            plant.setName(name.trim());
-        }
-        if (orderNumber != null && !orderNumber.trim().isBlank()) {
-            plant.setOrderNumber(orderNumber.trim());
-        }
-        plant.setNotes(notes);
+        String normalizedName = normalize(request.name());
+        String normalizedOrder = normalize(request.orderNumber());
+        String normalizedNotes = normalizeNullable(request.notes());
 
-        return plantRepository.save(plant);
+        if (normalizedName != null) plant.setName(normalizedName);
+        if (normalizedOrder != null) plant.setOrderNumber(normalizedOrder);
+        plant.setNotes(normalizedNotes);
+
+        var saved = plantRepository.save(plant);
+        return toResponse(saved);
     }
 
     @Override
     public void deletePlant(UUID id) {
-        if (!plantRepository.existsById(id)) {
-            throw new RuntimeException("Plant not found: " + id);
+        Plant plant = plantRepository.findById(id).orElseThrow(() -> new NotFoundException("Plant non trovato: " + id));
+
+        // stacco i work: restano in DB, solo senza impianto collegato
+        for (WorkFromPlant w : plant.getWorksFromPlant()) {
+            w.setPlant(null);
         }
-        plantRepository.deleteById(id);
+
+        plantRepository.delete(plant);
     }
 
     @Override
-    public Plant invoicePlant(UUID id) {
-        Plant plant = plantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plant not found: " + id));
-
-        // idempotenza: se già fatturato, non cambiare nulla
-        if (plant.getInvoiced()) {
-            return plant;
-        }
+    public PlantResponse invoicePlant(UUID id) {
+        Plant plant = plantRepository.findById(id).orElseThrow(() -> new NotFoundException("Plant non trovato: " + id));
+        if (plant.getInvoiced()) return toResponse(plant);
 
         plant.setInvoiced(true);
         plant.setInvoicedAt(LocalDateTime.now());
-        return plantRepository.save(plant);
+        var saved = plantRepository.save(plant);
+        return toResponse(saved);
     }
 
     @Override
-    public List<Plant> getPlantsByClient(UUID clientId) {
+    public List<PlantResponse> getPlantsByClient(UUID clientId) {
         List<Plant> primary = plantRepository.findByPrimaryClient_Id(clientId);
         List<Plant> fin = plantRepository.findByFinalClient_Id(clientId);
 
         return Stream.concat(primary.stream(), fin.stream())
                 .distinct()
+                .map(this::toResponse)
                 .toList();
     }
 
     @Override
-    public List<Plant> searchPlants(String query) {
+    public List<PlantResponse> searchPlants(String query) {
         String q = (query == null) ? "" : query.trim();
         if (q.isBlank()) return getAllPlants();
-        return plantRepository.search(q);
+        return plantRepository
+                .search(q)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private String normalize(String value) {
+        if (value == null) return null;
+        String v = value.trim();
+        return v.isBlank() ? null : v;
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) return null;
+        String v = value.trim();
+        return v.isBlank() ? null : v;
+    }
+
+    private PlantResponse toResponse(Plant plant) {
+        return new PlantResponse(
+                plant.getId(),
+                plant.getName(),
+                plant.getNotes(),
+                plant.getOrderNumber(),
+                plant.getPrimaryClient().getId(),
+                plant.getFinalClient() != null ? plant.getFinalClient().getId() : null,
+                plant.getInvoiced()
+        );
     }
 }
