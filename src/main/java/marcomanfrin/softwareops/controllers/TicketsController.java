@@ -65,6 +65,7 @@ public class TicketsController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public TicketResponse patchTicket(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateTicketRequest request
@@ -73,6 +74,7 @@ public class TicketsController {
     }
 
     @PostMapping("/{id}/close")
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public TicketResponse closeTicket(@PathVariable UUID id) {
         return toResponse(ticketService.closeTicket(id));
     }
@@ -86,6 +88,7 @@ public class TicketsController {
 
     @PostMapping("/{id}/works")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public Work createWorkFromTicket(@PathVariable UUID id) {
         return workService.createWorkFromTicket(id);
     }

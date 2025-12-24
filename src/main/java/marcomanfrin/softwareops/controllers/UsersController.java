@@ -35,7 +35,7 @@ public class UsersController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER') or #id == authentication.principal.id")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER') or @securityService.isSelf(#id, authentication)")
     public UserResponseDTO getUserById(@PathVariable UUID id) {
         return UserResponseDTO.fromEntity(usersService.getUserById(id).orElseThrow());
     }

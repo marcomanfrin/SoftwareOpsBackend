@@ -11,6 +11,7 @@ import marcomanfrin.softwareops.services.IPlantService;
 import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -54,12 +55,14 @@ public class PlantsController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<Void> deletePlant(@PathVariable UUID id) {
         plantService.deletePlant(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/invoice")
+    @PreAuthorize("@securityService.isAdministrative(authentication)")
     public ResponseEntity<PlantResponse> invoicePlant(@PathVariable UUID id) {
         return ResponseEntity.ok(plantService.invoicePlant(id));
     }
@@ -75,6 +78,7 @@ public class PlantsController {
     }
 
     @PostMapping("/{id}/works")
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public ResponseEntity<WorkResponse> createWorkFromPlant(@PathVariable UUID id) {
         WorkResponse created = workService.createWorkFromPlant(id);
         return ResponseEntity

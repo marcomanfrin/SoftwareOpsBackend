@@ -25,6 +25,7 @@ public class ClientsController {
     private IClientService clientService;
 
     @PostMapping
+    @PreAuthorize("@securityService.isAdministrative(authentication)")
     public ResponseEntity<Client> createClient(
             @Valid @RequestBody CreateClientRequest request,
             UriComponentsBuilder uriBuilder
@@ -50,12 +51,13 @@ public class ClientsController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@securityService.isAdministrative(authentication)")
     public Client updateClient(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest request) {
         return clientService.updateClient(id, request.name(), request.type());
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<Void> deleteClient(@PathVariable UUID id) {
         clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
