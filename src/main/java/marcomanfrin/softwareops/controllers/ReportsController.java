@@ -1,7 +1,7 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.AddWorkReportEntryRequest;
-import marcomanfrin.softwareops.DTO.UpdateWorkReportEntryRequest;
+import marcomanfrin.softwareops.DTO.workReports.AddWorkReportEntryRequest;
+import marcomanfrin.softwareops.DTO.workReports.UpdateWorkReportEntryRequest;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.entities.WorkFromTicket;
 import marcomanfrin.softwareops.entities.WorkReport;

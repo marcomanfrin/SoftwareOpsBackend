@@ -1,14 +1,12 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
-import marcomanfrin.softwareops.DTO.CreateUserRequest;
-import marcomanfrin.softwareops.DTO.UpdateUserRequest;
-import marcomanfrin.softwareops.DTO.UpdateUserRoleRequest;
+import marcomanfrin.softwareops.DTO.users.ChangePasswordRequest;
+import marcomanfrin.softwareops.DTO.users.UpdateUserRequest;
+import marcomanfrin.softwareops.DTO.users.UpdateUserRoleRequest;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.services.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

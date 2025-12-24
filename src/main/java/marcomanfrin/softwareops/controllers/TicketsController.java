@@ -1,7 +1,7 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.CreateTicketRequest;
-import marcomanfrin.softwareops.DTO.UpdateTicketRequest;
+import marcomanfrin.softwareops.DTO.tickets.CreateTicketRequest;
+import marcomanfrin.softwareops.DTO.tickets.UpdateTicketRequest;
 import marcomanfrin.softwareops.entities.Ticket;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.enums.TicketStatus;

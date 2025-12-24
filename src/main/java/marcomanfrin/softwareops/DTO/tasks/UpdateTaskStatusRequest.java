@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.tasks;
 
 import marcomanfrin.softwareops.enums.TaskStatus;
 

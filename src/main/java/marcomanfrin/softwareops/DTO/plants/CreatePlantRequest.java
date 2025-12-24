@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.plants;
 
 import java.util.UUID;
 

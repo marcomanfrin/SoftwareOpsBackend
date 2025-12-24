@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.clients;
 
 import marcomanfrin.softwareops.enums.ClientType;
 

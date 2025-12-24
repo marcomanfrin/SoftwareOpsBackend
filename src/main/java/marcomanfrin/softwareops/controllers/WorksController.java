@@ -1,7 +1,7 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.AssignTechnicianRequest;
-import marcomanfrin.softwareops.DTO.UpdateWorkRequest;
+import marcomanfrin.softwareops.DTO.works.AssignTechnicianRequest;
+import marcomanfrin.softwareops.DTO.works.UpdateWorkRequest;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.enums.WorkStatus;
 import marcomanfrin.softwareops.services.IWorkAssignmentService;

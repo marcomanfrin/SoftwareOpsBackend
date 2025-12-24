@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.registration;
 
 import marcomanfrin.softwareops.enums.UserRole;
 

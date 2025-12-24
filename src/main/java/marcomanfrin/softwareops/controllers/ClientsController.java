@@ -1,7 +1,7 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.CreateClientRequest;
-import marcomanfrin.softwareops.DTO.UpdateClientRequest;
+import marcomanfrin.softwareops.DTO.clients.CreateClientRequest;
+import marcomanfrin.softwareops.DTO.clients.UpdateClientRequest;
 import marcomanfrin.softwareops.entities.Client;
 import marcomanfrin.softwareops.services.IClientService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package marcomanfrin.softwareops.services;
 
-import marcomanfrin.softwareops.DTO.ChangePasswordRequest;
+import marcomanfrin.softwareops.DTO.users.ChangePasswordRequest;
 import marcomanfrin.softwareops.DTO.registration.NewUserDTO;
 import marcomanfrin.softwareops.DTO.registration.NewUserRespDTO;
 import marcomanfrin.softwareops.entities.TechnicianUser;

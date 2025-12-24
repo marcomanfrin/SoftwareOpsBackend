@@ -1,8 +1,8 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.CreateTaskRequest;
-import marcomanfrin.softwareops.DTO.UpdateTaskRequest;
-import marcomanfrin.softwareops.DTO.UpdateTaskStatusRequest;
+import marcomanfrin.softwareops.DTO.tasks.CreateTaskRequest;
+import marcomanfrin.softwareops.DTO.tasks.UpdateTaskRequest;
+import marcomanfrin.softwareops.DTO.tasks.UpdateTaskStatusRequest;
 import marcomanfrin.softwareops.entities.Task;
 import marcomanfrin.softwareops.enums.TaskStatus;
 import marcomanfrin.softwareops.services.ITaskService;

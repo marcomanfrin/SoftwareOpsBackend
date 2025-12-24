@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.tickets;
 
 import marcomanfrin.softwareops.enums.TicketStatus;
 

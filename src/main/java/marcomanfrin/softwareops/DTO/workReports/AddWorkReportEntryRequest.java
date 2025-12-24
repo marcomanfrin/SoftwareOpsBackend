@@ -1,4 +1,4 @@
-package marcomanfrin.softwareops.DTO;
+package marcomanfrin.softwareops.DTO.workReports;
 
 import java.math.BigDecimal;
 import java.util.UUID;

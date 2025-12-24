@@ -1,7 +1,7 @@
 package marcomanfrin.softwareops.controllers;
 
-import marcomanfrin.softwareops.DTO.CreatePlantRequest;
-import marcomanfrin.softwareops.DTO.UpdatePlantRequest;
+import marcomanfrin.softwareops.DTO.plants.CreatePlantRequest;
+import marcomanfrin.softwareops.DTO.plants.UpdatePlantRequest;
 import marcomanfrin.softwareops.entities.Plant;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.services.IPlantService;
