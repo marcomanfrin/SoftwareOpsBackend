@@ -38,6 +38,4 @@ public class AuthController {
         }
         return this.userService.saveNewUser(body);
     }
-
-    //**GET** `/auth/me`
 }

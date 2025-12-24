@@ -20,6 +20,9 @@ public abstract class Work {
     @GeneratedValue
     private UUID id;
 
+    @Column(nullable = false)
+    private String title;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WorkStatus status  = WorkStatus.DRAFT;
@@ -51,7 +54,12 @@ public abstract class Work {
         this.updatedAt = LocalDateTime.now();
     }
 
-
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
