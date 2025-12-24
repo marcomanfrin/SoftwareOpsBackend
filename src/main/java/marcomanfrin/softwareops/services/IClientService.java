@@ -10,9 +10,9 @@ import java.util.Optional;
 public interface IClientService {
 
     Client createClient(String name, ClientType type);
-    Optional<Client> getClientById(UUID id);
     List<Client> getAllClients();
     Client updateClient(UUID id, String name, ClientType type);
     void deleteClient(UUID id);
     List<Client> searchClients(String query);
+    Client getClientByIdOrThrow(UUID id);
 }

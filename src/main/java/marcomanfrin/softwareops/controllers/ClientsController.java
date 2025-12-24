@@ -1,15 +1,21 @@
 package marcomanfrin.softwareops.controllers;
 
+import jakarta.validation.Valid;
 import marcomanfrin.softwareops.DTO.clients.CreateClientRequest;
 import marcomanfrin.softwareops.DTO.clients.UpdateClientRequest;
 import marcomanfrin.softwareops.entities.Client;
 import marcomanfrin.softwareops.services.IClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
 
 @RestController
 @RequestMapping("/clients")
@@ -19,8 +25,18 @@ public class ClientsController {
     private IClientService clientService;
 
     @PostMapping
-    public Client createClient(@RequestBody CreateClientRequest request) {
-        return clientService.createClient(request.name(), request.type());
+    public ResponseEntity<Client> createClient(
+            @Valid @RequestBody CreateClientRequest request,
+            UriComponentsBuilder uriBuilder
+    ) {
+        Client created = clientService.createClient(request.name(), request.type());
+
+        URI location = uriBuilder
+                .path("/clients/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
     }
 
     @GetMapping
@@ -29,22 +45,17 @@ public class ClientsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> getClientById(@PathVariable UUID id) {
-        return clientService.getClientById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Client getClientById(@PathVariable UUID id) {
+        return clientService.getClientByIdOrThrow(id);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Client> updateClient(@PathVariable UUID id, @RequestBody UpdateClientRequest request) {
-        Client updatedClient = clientService.updateClient(id, request.name(), request.type());
-        if (updatedClient != null) {
-            return ResponseEntity.ok(updatedClient);
-        }
-        return ResponseEntity.notFound().build();
+    public Client updateClient(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest request) {
+        return clientService.updateClient(id, request.name(), request.type());
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
     public ResponseEntity<Void> deleteClient(@PathVariable UUID id) {
         clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
