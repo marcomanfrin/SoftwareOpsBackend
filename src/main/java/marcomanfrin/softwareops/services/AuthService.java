@@ -21,10 +21,13 @@ public class AuthService {
     }
 
     public String checkCredentialsAndGenerateToken(LoginDTO body) {
-		User found = this.userService.getUserByUsername(body.userName()).get();
+        User user = userService
+                .getUserByUsername(body.userName())
+                .orElseThrow(() -> new UnauthorizedException("Utente non trovato"));
 
-		if (bcrypt.matches(body.password(), found.getPassword())) {
-			return jwtTools.createToken(found);
+
+        if (bcrypt.matches(body.password(), user.getPassword())) {
+			return jwtTools.createToken(user);
 		}
         else {
 			throw new UnauthorizedException("Credenziali errate");

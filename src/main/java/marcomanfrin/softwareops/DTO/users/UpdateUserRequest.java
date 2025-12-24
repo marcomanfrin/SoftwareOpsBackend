@@ -1,4 +1,4 @@
 package marcomanfrin.softwareops.DTO.users;
 
-public record UpdateUserRequest(String firstName, String surname, String email) {
+public record UpdateUserRequest(String firstName, String lastName, String email) {
 }

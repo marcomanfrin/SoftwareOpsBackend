@@ -6,13 +6,16 @@ import jakarta.persistence.EntityNotFoundException;
 import marcomanfrin.softwareops.DTO.users.ChangePasswordRequest;
 import marcomanfrin.softwareops.DTO.registration.NewUserDTO;
 import marcomanfrin.softwareops.DTO.registration.NewUserRespDTO;
+import marcomanfrin.softwareops.DTO.users.UpdateUserRequest;
 import marcomanfrin.softwareops.entities.AdministrativeUser;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.enums.UserType;
+import marcomanfrin.softwareops.exceptions.UnauthorizedException;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.tools.MailgunSender;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,10 +47,10 @@ public class UserService implements IUserService {
         String p = requireNotBlank(body.password(), "password");
 
         if (userRepository.existsByUsernameIgnoreCase(u)) {
-            throw new IllegalArgumentException("Username already exists: " + u);
+            throw new DataIntegrityViolationException("Username already exists: " + u);
         }
         if (userRepository.existsByEmailIgnoreCase(e)) {
-            throw new IllegalArgumentException("Email already exists: " + e);
+            throw new DataIntegrityViolationException("Email already exists: " + e);
         }
 
         User user = createUserByType(body.userType());
@@ -64,18 +67,30 @@ public class UserService implements IUserService {
         return new NewUserRespDTO(saved.getId());
     }
 
+    @Override
+    public void changePassword(UUID userId, ChangePasswordRequest req) {
+        if (req == null) throw new IllegalArgumentException("Request cannot be null");
+
+        String oldPw = requireNotBlank(req.oldPassword(), "oldPassword");
+        String newPw = requireNotBlank(req.newPassword(), "newPassword");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        if (bcrypt.matches(oldPw, user.getPassword())) {
+            throw new UnauthorizedException("Old password is incorrect");
+        }
+
+        user.setPasswordHash(bcrypt.encode(newPw));
+        userRepository.save(user);
+    }
+
     private User createUserByType(UserType userType) {
         return switch (userType) {
             case ADMINISTRATIVE -> new AdministrativeUser();
             case TECHNICIAN -> new TechnicianUser();
         };
     }
-
-
-
-
-
-
 
     @Override
     public Optional<User> getUserById(UUID id) {
@@ -94,13 +109,13 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User updateUser(UUID id, String firstName, String surname, String profileImageUrl) {
+    public User updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
 
-        user.setFirstName(firstName);
-        user.setLastName(surname);
-        user.setProfileImageUrl(profileImageUrl);
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
 
         return userRepository.save(user);
     }
@@ -130,24 +145,7 @@ public class UserService implements IUserService {
         return userRepository.save(user);
     }
 
-    @Override
-    public User changePassword(UUID userId, ChangePasswordRequest req) {
-        if (req == null) throw new IllegalArgumentException("Request cannot be null");
 
-        String oldPw = requireNotBlank(req.oldPassword(), "oldPassword");
-        String newPw = requireNotBlank(req.newPassword(), "newPassword");
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-
-        // TODO: hash
-        if (!oldPw.equals(user.getPasswordHash())) {
-            throw new IllegalArgumentException("Old password is incorrect");
-        }
-
-        user.setPasswordHash(newPw);
-        return userRepository.save(user);
-    }
 
     @Override
     public List<TechnicianUser> getTechnicians() {
