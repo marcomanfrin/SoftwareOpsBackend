@@ -17,8 +17,11 @@ import marcomanfrin.softwareops.exceptions.UnauthorizedException;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.tools.MailgunSender;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
@@ -69,6 +72,7 @@ public class UserService implements IUserService {
     }
 
     @Override
+    @Transactional
     public void changePassword(UUID userId, ChangePasswordRequest req) {
         if (req == null) throw new IllegalArgumentException("Request cannot be null");
 
@@ -78,7 +82,7 @@ public class UserService implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
-        if (bcrypt.matches(oldPw, user.getPassword())) {
+        if (!bcrypt.matches(oldPw, user.getPassword())) {
             throw new UnauthorizedException("Old password is incorrect");
         }
 
@@ -110,6 +114,13 @@ public class UserService implements IUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional
     public User updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
@@ -130,6 +141,7 @@ public class UserService implements IUserService {
     }
 
     @Override
+    @Transactional
     public User changeUserRole(UUID id, UserRole role) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -138,6 +150,7 @@ public class UserService implements IUserService {
     }
 
     @Override
+    @Transactional
     public User updateProfileImageUrl(UUID userId, String profileImageUrl) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found: " + userId));

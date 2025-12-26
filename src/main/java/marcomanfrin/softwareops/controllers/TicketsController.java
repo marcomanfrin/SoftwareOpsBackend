@@ -82,7 +82,7 @@ public class TicketsController {
     }
 
     @PostMapping("/{id}/close")
-    //@PreAuthorize("@securityService.isTechnician(authentication)")
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public TicketResponse closeTicket(@PathVariable UUID id) {
         return toResponse(ticketService.closeTicket(id));
     }

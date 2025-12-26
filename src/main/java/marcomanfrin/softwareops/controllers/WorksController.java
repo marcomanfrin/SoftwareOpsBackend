@@ -44,33 +44,33 @@ public class WorksController {
 
 
     @GetMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
     public WorkResponseDTO getWorkById(@PathVariable UUID id) {
         return WorkResponseDTO.fromEntity(workService.getWorkByIdOrThrow(id));
     }
 
     // Update SOLO status: PATCH semantico
     @PatchMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     public WorkResponseDTO updateWorkStatus(@PathVariable UUID id, @RequestBody @Valid UpdateWorkRequest request) {
         return WorkResponseDTO.fromEntity(workService.updateWorkStatus(id, request.status()));
     }
 
     @PostMapping("/{id}/assignments")
-    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     public ResponseEntity<Void> assignTechnician(@PathVariable UUID id, @RequestBody @Valid AssignTechnicianRequest request) {
         workAssignmentService.assignTechnicianToWork(id, request.technicianId(), request.role());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/complete")
-    //@PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
     public WorkResponseDTO completeWork(@PathVariable UUID id) {
         return WorkResponseDTO.fromEntity(workService.completeWork(id));
     }
 
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     public ResponseEntity<Void> deleteWork(@PathVariable UUID id) {
         workService.deleteWork(id);
         return ResponseEntity.noContent().build();

@@ -2,9 +2,13 @@ package marcomanfrin.softwareops.services;
 
 import marcomanfrin.softwareops.DTO.tickets.CreateTicketRequest;
 import marcomanfrin.softwareops.DTO.tickets.UpdateTicketRequest;
+import marcomanfrin.softwareops.entities.Client;
+import marcomanfrin.softwareops.entities.Plant;
 import marcomanfrin.softwareops.entities.Ticket;
 import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.exceptions.NotFoundException;
+import marcomanfrin.softwareops.repositories.ClientRepository;
+import marcomanfrin.softwareops.repositories.PlantRepository;
 import marcomanfrin.softwareops.repositories.TicketRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +23,17 @@ import java.util.UUID;
 public class TicketService implements ITicketService {
 
     private final TicketRepository ticketRepository;
+    private final ClientRepository clientRepository;
+    private final PlantRepository plantRepository;
 
-    public TicketService(TicketRepository ticketRepository) {
+    public TicketService(TicketRepository ticketRepository, ClientRepository clientRepository, PlantRepository plantRepository) {
         this.ticketRepository = ticketRepository;
+        this.clientRepository = clientRepository;
+        this.plantRepository = plantRepository;
     }
 
     @Override
+    @Transactional
     public Ticket createTicket(CreateTicketRequest request) {
         String name = validateName(request.name());
 
@@ -32,8 +41,22 @@ public class TicketService implements ITicketService {
         ticket.setName(name);
         ticket.setDescription(request.description());
         ticket.setStatus(TicketStatus.OPEN);
-        ticket.setCreatedAt(LocalDateTime.now());
-        ticket.setUpdatedAt(LocalDateTime.now());
+
+        // Collega client se fornito
+        if (request.clientId() != null) {
+            Client client = clientRepository.findById(request.clientId())
+                    .orElseThrow(() -> new NotFoundException("Client not found: " + request.clientId()));
+            ticket.setClient(client);
+        }
+
+        // Collega plant se fornito
+        if (request.plantId() != null) {
+            Plant plant = plantRepository.findById(request.plantId())
+                    .orElseThrow(() -> new NotFoundException("Plant not found: " + request.plantId()));
+            ticket.setPlant(plant);
+        }
+
+        // I timestamp sono gestiti automaticamente da @PrePersist/@PreUpdate
         return ticketRepository.save(ticket);
     }
 

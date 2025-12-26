@@ -95,7 +95,7 @@ public class PlantsController {
     }
 
     @PostMapping("/{id}/works")
-    //@PreAuthorize("@securityService.isTechnician(authentication)")
+    @PreAuthorize("@securityService.isTechnician(authentication)")
     public ResponseEntity<WorkResponseDTO> createWorkFromPlant(@PathVariable UUID id) {
         WorkResponseDTO created = workService.createWorkFromPlant(id);
         return ResponseEntity

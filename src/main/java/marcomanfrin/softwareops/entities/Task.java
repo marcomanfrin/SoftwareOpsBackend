@@ -27,23 +27,6 @@ public class Task {
     @JsonIgnore
     private Work work;
 
-//    @Column(nullable = false, updatable = false)
-//    private LocalDateTime createdAt;
-//
-//    @Column(nullable = false)
-//    private LocalDateTime updatedAt;
-//
-//    @PrePersist
-//    void onCreate() {
-//        createdAt = LocalDateTime.now();
-//        updatedAt = createdAt;
-//    }
-//
-//    @PreUpdate
-//    void onUpdate() {
-//        updatedAt = LocalDateTime.now();
-//    }
-
     public Task() {}
 
     public Task(String text, TaskStatus status, Work work) {

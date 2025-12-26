@@ -6,6 +6,9 @@ import marcomanfrin.softwareops.DTO.clients.UpdateClientRequest;
 import marcomanfrin.softwareops.entities.Client;
 import marcomanfrin.softwareops.services.IClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +44,14 @@ public class ClientsController {
     }
 
     @GetMapping
-    public List<Client> getAllClients() {
-        return clientService.getAllClients();
+    public Page<Client> getAllClients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size < 1 || size > 100) ? 20 : size;
+        PageRequest pageRequest = PageRequest.of(safePage, safeSize, Sort.by("name").ascending());
+        return clientService.getAllClients(pageRequest);
     }
 
     @GetMapping("/{id}")

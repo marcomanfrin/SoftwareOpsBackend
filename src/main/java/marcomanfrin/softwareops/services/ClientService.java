@@ -4,6 +4,8 @@ import marcomanfrin.softwareops.entities.Client;
 import marcomanfrin.softwareops.enums.ClientType;
 import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.ClientRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,12 @@ public class ClientService implements IClientService {
     @Transactional(readOnly = true)
     public List<Client> getAllClients() {
         return clientRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Client> getAllClients(Pageable pageable) {
+        return clientRepository.findAll(pageable);
     }
 
     @Override

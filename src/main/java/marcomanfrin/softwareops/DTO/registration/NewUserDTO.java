@@ -24,7 +24,7 @@ public record NewUserDTO(
         String email,
 
         @NotBlank(message = "La password è un campo obbligatorio")
-        //@Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")
+        @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$", message = "La password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero")
         String password,
 
         @NotNull(message = "Il ruolo è un campo obbligatorio")

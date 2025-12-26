@@ -7,6 +7,8 @@ import marcomanfrin.softwareops.DTO.users.UpdateUserRequest;
 import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public interface IUserService {
     Optional<User> getUserById(UUID id);
     Optional<User> getUserByUsername(String username);
     List<User> getAllUsers();
+    Page<User> getAllUsers(Pageable pageable);
     User updateUser(UUID id, UpdateUserRequest request);
     void deleteUser(UUID id);
     User changeUserRole(UUID id, UserRole role);

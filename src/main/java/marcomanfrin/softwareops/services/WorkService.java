@@ -11,6 +11,7 @@ import marcomanfrin.softwareops.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +38,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
+    @Transactional
     public WorkResponseDTO createWorkFromPlant(UUID plantId) {
         Plant plant = plantRepository.findById(plantId)
                 .orElseThrow(() -> new NotFoundException("Plant not found: " + plantId));
@@ -52,6 +54,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
+    @Transactional
     public Work createWorkFromTicket(UUID ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new NotFoundException("Ticket not found: " + ticketId));
@@ -105,6 +108,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
+    @Transactional
     public Work assignTechnician(UUID workId, UUID technicianId) {
         workAssignmentService.assignTechnicianToWork(workId, technicianId, AssignmentRole.MEMBER);
 
@@ -118,6 +122,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
+    @Transactional
     public Work updateWorkStatus(UUID workId, WorkStatus status) {
         if (status == null) throw new IllegalArgumentException("Status cannot be null");
 
@@ -134,6 +139,7 @@ public class WorkService implements IWorkService {
     }
 
     @Override
+    @Transactional
     public Work completeWork(UUID workId) {
         Work work = workRepository.findById(workId)
                 .orElseThrow(() -> new NotFoundException("Work not found: " + workId));

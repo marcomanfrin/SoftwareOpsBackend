@@ -5,10 +5,13 @@ import marcomanfrin.softwareops.enums.TicketStatus;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +26,20 @@ public interface TicketRepository extends JpaRepository<@NonNull Ticket, @NonNul
 
     long countByStatus(TicketStatus status);
     List<Ticket> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    // Query with JOIN FETCH to prevent N+1
+    @Query("""
+        SELECT DISTINCT t FROM Ticket t
+        LEFT JOIN FETCH t.client
+        LEFT JOIN FETCH t.plant
+        WHERE t.id = :id
+    """)
+    Optional<Ticket> findByIdWithRelations(@Param("id") UUID id);
+
+    @Query("""
+        SELECT DISTINCT t FROM Ticket t
+        LEFT JOIN FETCH t.client
+        LEFT JOIN FETCH t.plant
+    """)
+    List<Ticket> findAllWithRelations();
 }
