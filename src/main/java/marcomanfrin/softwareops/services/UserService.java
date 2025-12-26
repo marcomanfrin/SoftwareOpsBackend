@@ -12,6 +12,7 @@ import marcomanfrin.softwareops.entities.TechnicianUser;
 import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.enums.UserRole;
 import marcomanfrin.softwareops.enums.UserType;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.exceptions.UnauthorizedException;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.tools.MailgunSender;
@@ -75,7 +76,7 @@ public class UserService implements IUserService {
         String newPw = requireNotBlank(req.newPassword(), "newPassword");
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
         if (bcrypt.matches(oldPw, user.getPassword())) {
             throw new UnauthorizedException("Old password is incorrect");
@@ -111,7 +112,7 @@ public class UserService implements IUserService {
     @Override
     public User updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
 
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
@@ -123,7 +124,7 @@ public class UserService implements IUserService {
     @Override
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found: " + id);
+            throw new NotFoundException("User not found: " + id);
         }
         userRepository.deleteById(id);
     }
@@ -131,7 +132,7 @@ public class UserService implements IUserService {
     @Override
     public User changeUserRole(UUID id, UserRole role) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setRole(role);
         return userRepository.save(user);
     }
@@ -139,7 +140,7 @@ public class UserService implements IUserService {
     @Override
     public User updateProfileImageUrl(UUID userId, String profileImageUrl) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
         user.setProfileImageUrl(requireNotBlank(profileImageUrl, "profileImageUrl"));
         return userRepository.save(user);

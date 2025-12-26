@@ -91,7 +91,7 @@ public class TicketService implements ITicketService {
     @Override
     public Ticket changeTicketStatus(UUID id, TicketStatus status) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found: " + id));
+                .orElseThrow(() -> new NotFoundException("Ticket not found: " + id));
 
         if (ticket.getStatus() == status) {
             return ticket;

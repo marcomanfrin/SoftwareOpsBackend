@@ -54,7 +54,7 @@ public class WorkService implements IWorkService {
     @Override
     public Work createWorkFromTicket(UUID ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
+                .orElseThrow(() -> new NotFoundException("Ticket not found: " + ticketId));
 
         WorkFromTicket work = new WorkFromTicket();
         work.setTicket(ticket);
@@ -122,7 +122,7 @@ public class WorkService implements IWorkService {
         if (status == null) throw new IllegalArgumentException("Status cannot be null");
 
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
+                .orElseThrow(() -> new NotFoundException("Work not found: " + workId));
 
         work.setStatus(status);
         work.setUpdatedAt(LocalDateTime.now());
@@ -136,7 +136,7 @@ public class WorkService implements IWorkService {
     @Override
     public Work completeWork(UUID workId) {
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
+                .orElseThrow(() -> new NotFoundException("Work not found: " + workId));
 
         // ✅ precondizione 1: task completati
         if (!areAllTasksCompleted(workId)) {

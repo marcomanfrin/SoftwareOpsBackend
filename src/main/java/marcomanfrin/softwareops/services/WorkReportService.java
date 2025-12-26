@@ -2,8 +2,10 @@ package marcomanfrin.softwareops.services;
 
 import jakarta.transaction.Transactional;
 import marcomanfrin.softwareops.entities.*;
+import marcomanfrin.softwareops.exceptions.ForbiddenException;
 import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.*;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -41,7 +43,7 @@ public class WorkReportService implements IWorkReportService {
 
         // 1-per-work: se già esiste, non crearne un altro
         workReportRepository.findByWork_Id(workId).ifPresent(r -> {
-            throw new RuntimeException("Work report already exists for work: " + workId);
+            throw new DuplicateKeyException("Work report already exists for work: " + workId);
         });
 
         WorkReport report = new WorkReport();
@@ -71,7 +73,7 @@ public class WorkReportService implements IWorkReportService {
         WorkReport report = getByWorkIdOrThrow(workId);
 
         if (report.isFinalized()) {
-            throw new RuntimeException("Report is finalized, cannot add entries");
+            throw new ForbiddenException("Report is finalized, cannot add entries");
         }
 
         Task task = taskRepository.findById(taskId)
@@ -93,11 +95,11 @@ public class WorkReportService implements IWorkReportService {
         WorkReport report = getByWorkIdOrThrow(workId);
 
         if (report.isFinalized()) {
-            throw new RuntimeException("Report is finalized, cannot update entries");
+            throw new ForbiddenException("Report is finalized, cannot update entries");
         }
 
         WorkReportEntry entry = workReportEntryRepository.findById(entryId)
-                .orElseThrow(() -> new RuntimeException("Entry not found: " + entryId));
+                .orElseThrow(() -> new NotFoundException("Entry not found: " + entryId));
 
         // safety: entry deve appartenere al report di quel work
         if (!entry.getReport().getId().equals(report.getId())) {
@@ -120,7 +122,7 @@ public class WorkReportService implements IWorkReportService {
         }
 
         WorkReportEntry entry = workReportEntryRepository.findById(entryId)
-                .orElseThrow(() -> new RuntimeException("Entry not found: " + entryId));
+                .orElseThrow(() -> new NotFoundException("Entry not found: " + entryId));
 
         if (!entry.getReport().getId().equals(report.getId())) {
             throw new RuntimeException("Entry does not belong to work report for work: " + workId);

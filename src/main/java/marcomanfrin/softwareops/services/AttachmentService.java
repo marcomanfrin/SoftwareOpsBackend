@@ -7,6 +7,7 @@ import marcomanfrin.softwareops.entities.Attachment;
 import marcomanfrin.softwareops.entities.AttachmentLink;
 import marcomanfrin.softwareops.enums.AttachmentTargetType;
 import marcomanfrin.softwareops.enums.AttachmentType;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -105,7 +106,7 @@ public class AttachmentService implements IAttachmentService {
     @Override
     public void unlink(UUID linkId) {
         if (!attachmentLinkRepository.existsById(linkId)) {
-            throw new RuntimeException("AttachmentLink not found: " + linkId);
+            throw new NotFoundException("AttachmentLink not found: " + linkId);
         }
         attachmentLinkRepository.deleteById(linkId);
     }
@@ -148,7 +149,7 @@ public class AttachmentService implements IAttachmentService {
         };
 
         if (!exists) {
-            throw new RuntimeException("Target not found: " + targetType + " " + targetId);
+            throw new NotFoundException("Target not found: " + targetType + " " + targetId);
         }
     }
 
