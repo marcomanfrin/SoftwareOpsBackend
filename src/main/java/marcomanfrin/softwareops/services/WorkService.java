@@ -1,11 +1,12 @@
 package marcomanfrin.softwareops.services;
 
-import marcomanfrin.softwareops.DTO.works.WorkResponse;
+import marcomanfrin.softwareops.DTO.works.WorkResponseDTO;
 import marcomanfrin.softwareops.entities.*;
 import marcomanfrin.softwareops.enums.AssignmentRole;
 import marcomanfrin.softwareops.enums.TaskStatus;
 import marcomanfrin.softwareops.enums.TicketStatus;
 import marcomanfrin.softwareops.enums.WorkStatus;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,9 +37,9 @@ public class WorkService implements IWorkService {
     }
 
     @Override
-    public WorkResponse createWorkFromPlant(UUID plantId) {
+    public WorkResponseDTO createWorkFromPlant(UUID plantId) {
         Plant plant = plantRepository.findById(plantId)
-                .orElseThrow(() -> new RuntimeException("Plant not found: " + plantId));
+                .orElseThrow(() -> new NotFoundException("Plant not found: " + plantId));
 
         WorkFromPlant work = new WorkFromPlant();
         work.setPlant(plant);
@@ -47,7 +48,7 @@ public class WorkService implements IWorkService {
         work.setCreatedAt(LocalDateTime.now());
         work.setUpdatedAt(LocalDateTime.now());
         var savedWork = workRepository.save(work);
-        return new WorkResponse(savedWork.getId());
+        return WorkResponseDTO.fromEntity(savedWork);
     }
 
     @Override
@@ -98,7 +99,7 @@ public class WorkService implements IWorkService {
     @Override
     public void deleteWork(UUID id) {
         if (!workRepository.existsById(id)) {
-            throw new RuntimeException("Work not found: " + id);
+            throw new NotFoundException("Work not found: " + id);
         }
         workRepository.deleteById(id);
     }
@@ -108,9 +109,8 @@ public class WorkService implements IWorkService {
         workAssignmentService.assignTechnicianToWork(workId, technicianId, AssignmentRole.MEMBER);
 
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
+                .orElseThrow(() -> new NotFoundException("Work not found: " + workId));
 
-        // regola: appena assegnato → scheduled
         work.setStatus(WorkStatus.SCHEDULED);
         work.setUpdatedAt(LocalDateTime.now());
 
@@ -190,9 +190,15 @@ public class WorkService implements IWorkService {
         return workRepository.findByTicket_Id(ticketId);
     }
 
+    @Override
+    public Work getWorkByIdOrThrow(UUID id) {
+        return workRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Work not found: " + id));
+    }
+
     private boolean areAllTasksCompleted(UUID workId) {
         long total = taskRepository.countByWorkId(workId);
-        if (total == 0) return false;
+        if (total == 0) return true;
         long done = taskRepository.countByWorkIdAndStatus(workId, TaskStatus.DONE);
         return done == total;
     }

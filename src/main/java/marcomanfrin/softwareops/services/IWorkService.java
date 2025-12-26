@@ -1,6 +1,6 @@
 package marcomanfrin.softwareops.services;
 
-import marcomanfrin.softwareops.DTO.works.WorkResponse;
+import marcomanfrin.softwareops.DTO.works.WorkResponseDTO;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.entities.WorkFromPlant;
 import marcomanfrin.softwareops.entities.WorkFromTicket;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IWorkService {
-    WorkResponse createWorkFromPlant(UUID plantId);
+    WorkResponseDTO createWorkFromPlant(UUID plantId);
     Work createWorkFromTicket(UUID ticketId);
 
     Optional<Work> getWorkById(UUID id);
@@ -30,4 +30,6 @@ public interface IWorkService {
     List<Work> getWorksByStatus(WorkStatus status);
     List<WorkFromPlant> getWorksByPlantId(UUID plantId);
     List<WorkFromTicket> getWorksByTicketId(UUID ticketId);
+
+    Work getWorkByIdOrThrow(UUID id);
 }

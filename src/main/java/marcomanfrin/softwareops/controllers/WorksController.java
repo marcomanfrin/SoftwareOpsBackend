@@ -1,7 +1,9 @@
 package marcomanfrin.softwareops.controllers;
 
+import jakarta.validation.Valid;
 import marcomanfrin.softwareops.DTO.works.AssignTechnicianRequest;
 import marcomanfrin.softwareops.DTO.works.UpdateWorkRequest;
+import marcomanfrin.softwareops.DTO.works.WorkResponseDTO;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.enums.WorkStatus;
 import marcomanfrin.softwareops.services.IWorkAssignmentService;
@@ -9,8 +11,11 @@ import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -19,65 +24,55 @@ import java.util.UUID;
 @RequestMapping("/works")
 public class WorksController {
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
-    private static final int MAX_PAGE_SIZE = 100;
+    private final IWorkService workService;
+    private final IWorkAssignmentService workAssignmentService;
 
-    @Autowired
-    private IWorkService workService;
-
-    @Autowired
-    private IWorkAssignmentService workAssignmentService;
+    public WorksController(IWorkService workService, IWorkAssignmentService workAssignmentService) {
+        this.workService = workService;
+        this.workAssignmentService = workAssignmentService;
+    }
 
     @GetMapping
-    public Page<Work> getWorks(
+    public Page<WorkResponseDTO> getWorks(
             @RequestParam(required = false) WorkStatus status,
             @RequestParam(required = false) UUID technicianId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size) {
-        PageRequest pageRequest = buildPageRequest(page, size, Sort.by("createdAt").descending());
-        return workService.getWorks(status, technicianId, pageRequest);
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return workService.getWorks(status, technicianId, pageable)
+                .map(WorkResponseDTO::fromEntity);
     }
+
 
     @GetMapping("/{id}")
-    public ResponseEntity<Work> getWorkById(@PathVariable UUID id) {
-        return workService.getWorkById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    //@PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
+    public WorkResponseDTO getWorkById(@PathVariable UUID id) {
+        return WorkResponseDTO.fromEntity(workService.getWorkByIdOrThrow(id));
     }
 
-    private PageRequest buildPageRequest(int page, int size, Sort sort) {
-        int safePage = Math.max(0, page);
-        int safeSize = (size < 1 || size > MAX_PAGE_SIZE) ? DEFAULT_PAGE_SIZE : size;
-        return PageRequest.of(safePage, safeSize, sort);
-    }
-
+    // Update SOLO status: PATCH semantico
     @PatchMapping("/{id}")
-    public ResponseEntity<Work> updateWork(@PathVariable UUID id, @RequestBody UpdateWorkRequest request) {
-        Work updatedWork = workService.updateWorkStatus(id, request.status());
-        if (updatedWork != null) {
-            return ResponseEntity.ok(updatedWork);
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWork(@PathVariable UUID id) {
-        workService.deleteWork(id);
-        return ResponseEntity.noContent().build();
+    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    public WorkResponseDTO updateWorkStatus(@PathVariable UUID id, @RequestBody @Valid UpdateWorkRequest request) {
+        return WorkResponseDTO.fromEntity(workService.updateWorkStatus(id, request.status()));
     }
 
     @PostMapping("/{id}/assignments")
-    public ResponseEntity<Void> assignTechnician(@PathVariable UUID id, @RequestBody AssignTechnicianRequest request) {
+    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    public ResponseEntity<Void> assignTechnician(@PathVariable UUID id, @RequestBody @Valid AssignTechnicianRequest request) {
         workAssignmentService.assignTechnicianToWork(id, request.technicianId(), request.role());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/complete")
-    public ResponseEntity<Work> completeWork(@PathVariable UUID id) {
-        Work completedWork = workService.completeWork(id);
-        if (completedWork != null) {
-            return ResponseEntity.ok(completedWork);
-        }
-        return ResponseEntity.notFound().build();
+    @PatchMapping("/{id}/complete")
+    //@PreAuthorize("hasAnyRole('ADMIN','OWNER','TECHNICIAN')")
+    public WorkResponseDTO completeWork(@PathVariable UUID id) {
+        return WorkResponseDTO.fromEntity(workService.completeWork(id));
+    }
+
+    @DeleteMapping("/{id}")
+    //@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+    public ResponseEntity<Void> deleteWork(@PathVariable UUID id) {
+        workService.deleteWork(id);
+        return ResponseEntity.noContent().build();
     }
 }

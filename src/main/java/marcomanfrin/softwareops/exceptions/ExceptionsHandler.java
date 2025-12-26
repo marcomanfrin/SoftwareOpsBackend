@@ -56,6 +56,12 @@ public class ExceptionsHandler {
         return new ErrorDTO("Parametro non valido: " + ex.getName(), LocalDateTime.now());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorDTO handleNotPossible(IllegalStateException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
     public ErrorDTO handleUnauthorized(UnauthorizedException ex) {

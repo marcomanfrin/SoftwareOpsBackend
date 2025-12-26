@@ -1,8 +1,10 @@
 package marcomanfrin.softwareops.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import marcomanfrin.softwareops.enums.TaskStatus;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -22,7 +24,25 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "work_id", nullable = false)
+    @JsonIgnore
     private Work work;
+
+//    @Column(nullable = false, updatable = false)
+//    private LocalDateTime createdAt;
+//
+//    @Column(nullable = false)
+//    private LocalDateTime updatedAt;
+//
+//    @PrePersist
+//    void onCreate() {
+//        createdAt = LocalDateTime.now();
+//        updatedAt = createdAt;
+//    }
+//
+//    @PreUpdate
+//    void onUpdate() {
+//        updatedAt = LocalDateTime.now();
+//    }
 
     public Task() {}
 

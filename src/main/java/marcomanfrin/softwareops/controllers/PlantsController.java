@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import marcomanfrin.softwareops.DTO.plants.CreatePlantRequest;
 import marcomanfrin.softwareops.DTO.plants.PlantResponse;
 import marcomanfrin.softwareops.DTO.plants.UpdatePlantRequest;
-import marcomanfrin.softwareops.DTO.works.WorkResponse;
+import marcomanfrin.softwareops.DTO.works.WorkResponseDTO;
 import marcomanfrin.softwareops.services.IPlantService;
 import marcomanfrin.softwareops.services.IWorkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,9 +95,9 @@ public class PlantsController {
     }
 
     @PostMapping("/{id}/works")
-    @PreAuthorize("@securityService.isTechnician(authentication)")
-    public ResponseEntity<WorkResponse> createWorkFromPlant(@PathVariable UUID id) {
-        WorkResponse created = workService.createWorkFromPlant(id);
+    //@PreAuthorize("@securityService.isTechnician(authentication)")
+    public ResponseEntity<WorkResponseDTO> createWorkFromPlant(@PathVariable UUID id) {
+        WorkResponseDTO created = workService.createWorkFromPlant(id);
         return ResponseEntity
                 .created(URI.create("/works/" + created.id()))
                 .body(created);

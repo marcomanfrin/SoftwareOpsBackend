@@ -3,12 +3,13 @@ package marcomanfrin.softwareops.services;
 import marcomanfrin.softwareops.entities.Task;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.enums.TaskStatus;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.TaskRepository;
 import marcomanfrin.softwareops.repositories.WorkRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,13 +26,11 @@ public class TaskService implements ITaskService {
     @Override
     public Task createTask(UUID workId, String text) {
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
-
-        String validatedText = validateText(text);
+                .orElseThrow(() -> new NotFoundException("Work not found: " + workId));
 
         Task task = new Task();
         task.setWork(work);
-        task.setText(validatedText);
+        task.setText(validateText(text));
         task.setStatus(TaskStatus.TODO);
 
         Task saved = taskRepository.save(task);
@@ -40,74 +39,63 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public Optional<Task> getTaskById(UUID id) {
-        return taskRepository.findById(id);
-    }
-
-    @Override
     public List<Task> getTasksByWorkId(UUID workId) {
-        if (!workRepository.existsById(workId)) {
-            throw new RuntimeException("Work not found: " + workId);
-        }
+        ensureWorkExists(workId);
         return taskRepository.findByWorkId(workId);
     }
 
     @Override
-    public Task updateTask(UUID id, String text) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+    public List<Task> getTasksByStatus(UUID workId, TaskStatus status) {
+        if (status == null) throw new IllegalArgumentException("Task status cannot be null");
+        ensureWorkExists(workId);
+        return taskRepository.findByWorkIdAndStatus(workId, status);
+    }
 
+    @Override
+    public Task getTaskByIdOrThrow(UUID workId, UUID taskId) {
+        ensureWorkExists(workId);
+        return taskRepository.findByIdAndWork_Id(taskId, workId)
+                .orElseThrow(() -> new NotFoundException("Task not found: " + taskId + " for work: " + workId));
+    }
+
+    @Override
+    public Task updateTaskText(UUID workId, UUID taskId, String text) {
+        Task task = getTaskByIdOrThrow(workId, taskId);
         task.setText(validateText(text));
-
         Task saved = taskRepository.save(task);
-        onTasksChanged(task.getWork().getId());
+        onTasksChanged(workId);
         return saved;
     }
 
     @Override
-    public void deleteTask(UUID id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+    public Task updateTaskStatus(UUID workId, UUID taskId, TaskStatus status) {
+        if (status == null) throw new IllegalArgumentException("Task status cannot be null");
 
-        UUID workId = task.getWork().getId();
-        taskRepository.delete(task);
+        Task task = getTaskByIdOrThrow(workId, taskId);
+        if (task.getStatus() == status) return task;
+
+        task.setStatus(status);
+        Task saved = taskRepository.save(task);
+        onTasksChanged(workId);
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public void deleteTask(UUID workId, UUID taskId) {
+        getTaskByIdOrThrow(workId, taskId); // valida ownership
+        taskRepository.deleteByIdAndWork_Id(taskId, workId);
         onTasksChanged(workId);
     }
 
     @Override
-    public Task updateTaskStatus(UUID id, TaskStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Task status cannot be null");
-        }
+    public List<Task> setAllTasksStatus(UUID workId, TaskStatus status) {
+        if (status == null) throw new IllegalArgumentException("Task status cannot be null");
 
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+        ensureWorkExists(workId);
+        List<Task> tasks = taskRepository.findByWorkId(workId);
+        for (Task t : tasks) t.setStatus(status);
 
-        if (task.getStatus() == status) {
-            return task;
-        }
-
-        task.setStatus(status);
-
-        Task saved = taskRepository.save(task);
-        onTasksChanged(task.getWork().getId());
-        return saved;
-    }
-
-    @Override
-    public Task completeTask(UUID taskId) {
-        return updateTaskStatus(taskId, TaskStatus.DONE);
-    }
-
-    @Override
-    public List<Task> completeAllTasks(UUID workId) {
-        Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
-
-        List<Task> tasks = taskRepository.findByWorkId(work.getId());
-        for (Task t : tasks) {
-            t.setStatus(TaskStatus.DONE);
-        }
         List<Task> saved = taskRepository.saveAll(tasks);
         onTasksChanged(workId);
         return saved;
@@ -115,35 +103,26 @@ public class TaskService implements ITaskService {
 
     @Override
     public boolean areAllTasksCompleted(UUID workId) {
-        if (!workRepository.existsById(workId)) {
-            throw new RuntimeException("Work not found: " + workId);
-        }
+        ensureWorkExists(workId);
         long total = taskRepository.countByWorkId(workId);
-        if (total == 0) return false; // decisione di dominio: nessuna task => non “completato”
+        if (total == 0) return false;
         long done = taskRepository.countByWorkIdAndStatus(workId, TaskStatus.DONE);
         return done == total;
     }
 
     @Override
     public double getCompletionRate(UUID workId) {
-        if (!workRepository.existsById(workId)) {
-            throw new RuntimeException("Work not found: " + workId);
-        }
+        ensureWorkExists(workId);
         long total = taskRepository.countByWorkId(workId);
         if (total == 0) return 0.0;
         long done = taskRepository.countByWorkIdAndStatus(workId, TaskStatus.DONE);
         return (done * 100.0) / total;
     }
 
-    @Override
-    public List<Task> getTasksByStatus(UUID workId, TaskStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Task status cannot be null");
-        }
+    private void ensureWorkExists(UUID workId) {
         if (!workRepository.existsById(workId)) {
-            throw new RuntimeException("Work not found: " + workId);
+            throw new NotFoundException("Work not found: " + workId);
         }
-        return taskRepository.findByWorkIdAndStatus(workId, status);
     }
 
     private String validateText(String text) {
@@ -154,8 +133,6 @@ public class TaskService implements ITaskService {
     }
 
     private void onTasksChanged(UUID workId) {
-        // Hook per il futuro:
-        // - aggiornare una % sul Work
-        // - aggiornare WorkStatus (es. se tutte DONE -> READY_FOR_REPORT)
+        // qui puoi chiamare WorkService.refreshProgress(workId) se vuoi.
     }
 }

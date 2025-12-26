@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import marcomanfrin.softwareops.enums.WorkStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,6 +28,9 @@ public abstract class Work {
 
     @Column(nullable = false)
     private int progressPercent = 0;
+
+    @OneToMany(mappedBy = "work", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<WorkAssignment> assignments = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -84,5 +89,12 @@ public abstract class Work {
     }
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public List<WorkAssignment> getAssignments() {
+        return assignments;
+    }
+    public void setAssignments(List<WorkAssignment> assignments) {
+        this.assignments = assignments;
     }
 }

@@ -5,6 +5,7 @@ import marcomanfrin.softwareops.entities.User;
 import marcomanfrin.softwareops.entities.Work;
 import marcomanfrin.softwareops.entities.WorkAssignment;
 import marcomanfrin.softwareops.enums.AssignmentRole;
+import marcomanfrin.softwareops.exceptions.NotFoundException;
 import marcomanfrin.softwareops.repositories.UserRepository;
 import marcomanfrin.softwareops.repositories.WorkAssignmentRepository;
 import marcomanfrin.softwareops.repositories.WorkRepository;
@@ -30,10 +31,10 @@ public class WorkAssignmentService implements IWorkAssignmentService {
     @Override
     public void assignTechnicianToWork(UUID workId, UUID technicianId, AssignmentRole role) {
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Work not found: " + workId));
+                .orElseThrow(() -> new NotFoundException("Work not found: " + workId));
 
         User user = userRepository.findById(technicianId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + technicianId));
+                .orElseThrow(() -> new NotFoundException("User not found: " + technicianId));
 
         boolean isTechnician = (user instanceof TechnicianUser);
         if (!isTechnician) {
