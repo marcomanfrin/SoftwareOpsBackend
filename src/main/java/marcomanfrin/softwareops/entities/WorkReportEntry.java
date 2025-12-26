@@ -1,5 +1,6 @@
 package marcomanfrin.softwareops.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ public class WorkReportEntry {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "report_id", nullable = false)
+    @JsonIgnore
     private WorkReport report;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)

@@ -4,26 +4,21 @@ import marcomanfrin.softwareops.entities.WorkReport;
 import marcomanfrin.softwareops.entities.WorkReportEntry;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface IWorkReportService {
-    WorkReport createWorkReport(UUID workId, UUID ticketId);
-    Optional<WorkReport> getWorkReportById(UUID id);
-    List<WorkReport> getWorkReportsByWorkId(UUID workId);
 
-    Optional<WorkReport> getWorkReportByWorkId(UUID workId);
+    WorkReport createForWork(UUID workId);
 
-    WorkReportEntry addWorkReportEntry(UUID reportId, UUID taskId, BigDecimal hours);
-    WorkReportEntry updateWorkReportEntry(UUID entryId, BigDecimal hours);
-    void removeWorkReportEntry(UUID entryId);
+    WorkReport getByWorkIdOrThrow(UUID workId);
 
-    WorkReport calculateTotalHours(UUID reportId);
-    WorkReport calculateAndPersistTotalHours(UUID workId);
+    WorkReportEntry addEntryByWorkId(UUID workId, UUID taskId, BigDecimal hours);
 
-    WorkReport finalizeWorkReport(UUID workId);
+    WorkReportEntry updateEntry(UUID workId, UUID entryId, BigDecimal hours);
 
-    WorkReport invoiceWorkReport(UUID reportId);
-    boolean canInvoice(UUID workId);
+    void removeEntry(UUID workId, UUID entryId);
+
+    WorkReport finalizeByWorkId(UUID workId);
+
+    WorkReport invoiceByReportId(UUID reportId);
 }

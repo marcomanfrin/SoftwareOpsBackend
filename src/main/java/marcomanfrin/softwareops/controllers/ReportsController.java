@@ -1,95 +1,66 @@
 package marcomanfrin.softwareops.controllers;
 
+import jakarta.validation.Valid;
 import marcomanfrin.softwareops.DTO.workReports.AddWorkReportEntryRequest;
 import marcomanfrin.softwareops.DTO.workReports.UpdateWorkReportEntryRequest;
-import marcomanfrin.softwareops.entities.Work;
-import marcomanfrin.softwareops.entities.WorkFromTicket;
 import marcomanfrin.softwareops.entities.WorkReport;
 import marcomanfrin.softwareops.entities.WorkReportEntry;
 import marcomanfrin.softwareops.services.IWorkReportService;
-import marcomanfrin.softwareops.services.IWorkService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("") // Resetting base path to define full paths in methods
+@RequestMapping("/works/{workId}/reports")
 public class ReportsController {
 
-    @Autowired
-    private IWorkReportService workReportService;
+    private final IWorkReportService workReportService;
 
-    @Autowired
-    private IWorkService workService;
-
-    @PostMapping("/works/{workId}/reports")
-    public WorkReport createWorkReport(@PathVariable UUID workId) {
-        Work work = workService.getWorkById(workId).orElse(null);
-        if (work instanceof WorkFromTicket) {
-            return workReportService.createWorkReport(workId, ((WorkFromTicket) work).getTicket().getId());
-        }
-        return workReportService.createWorkReport(workId, null);
+    public ReportsController(IWorkReportService workReportService) {
+        this.workReportService = workReportService;
     }
 
-    @GetMapping("/works/{workId}/report")
-    public ResponseEntity<WorkReport> getWorkReportByWorkId(@PathVariable UUID workId) {
-        return workReportService.getWorkReportByWorkId(workId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PostMapping
+    public ResponseEntity<WorkReport> create(@PathVariable UUID workId) {
+        WorkReport created = workReportService.createForWork(workId);
+        return ResponseEntity
+                .created(URI.create("/works/" + workId + "/report"))
+                .body(created);
     }
 
-    @PostMapping("/works/{workId}/report/rows")
-    public ResponseEntity<WorkReportEntry> addWorkReportEntry(
+    @GetMapping
+    public WorkReport get(@PathVariable UUID workId) {
+        return workReportService.getByWorkIdOrThrow(workId);
+    }
+
+    @PostMapping("/rows")
+    public ResponseEntity<WorkReportEntry> addRow(
             @PathVariable UUID workId,
-            @RequestBody AddWorkReportEntryRequest request) {
-
-        return workReportService.getWorkReportByWorkId(workId)
-                .map(report -> {
-                    WorkReportEntry entry = workReportService.addWorkReportEntry(report.getId(), request.taskId(), request.hours());
-                    return ResponseEntity.ok(entry);
-                })
-                .orElse(ResponseEntity.notFound().build());
+            @RequestBody @Valid AddWorkReportEntryRequest request
+    ) {
+        WorkReportEntry entry = workReportService.addEntryByWorkId(workId, request.taskId(), request.hours());
+        return ResponseEntity.status(201).body(entry);
     }
 
-    @PatchMapping("/works/{workId}/report/rows/{rowId}")
-    public ResponseEntity<WorkReportEntry> updateWorkReportEntry(
+    @PatchMapping("/rows/{rowId}")
+    public WorkReportEntry updateRow(
             @PathVariable UUID workId,
             @PathVariable UUID rowId,
-            @RequestBody UpdateWorkReportEntryRequest request) {
-        // workId is not strictly necessary here based on the service, but it's good for URL consistency
-        WorkReportEntry updatedEntry = workReportService.updateWorkReportEntry(rowId, request.hours());
-        if (updatedEntry != null) {
-            return ResponseEntity.ok(updatedEntry);
-        }
-        return ResponseEntity.notFound().build();
+            @RequestBody @Valid UpdateWorkReportEntryRequest request
+    ) {
+        return workReportService.updateEntry(workId, rowId, request.hours());
     }
 
-    @DeleteMapping("/works/{workId}/report/rows/{rowId}")
-    public ResponseEntity<Void> removeWorkReportEntry(
-            @PathVariable UUID workId,
-            @PathVariable UUID rowId) {
-        // workId is not strictly necessary here based on the service, but it's good for URL consistency
-        workReportService.removeWorkReportEntry(rowId);
+    @DeleteMapping("/rows/{rowId}")
+    public ResponseEntity<Void> deleteRow(@PathVariable UUID workId, @PathVariable UUID rowId) {
+        workReportService.removeEntry(workId, rowId);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/works/{workId}/report/finalize")
-    public ResponseEntity<WorkReport> finalizeWorkReport(@PathVariable UUID workId) {
-        WorkReport finalizedReport = workReportService.finalizeWorkReport(workId);
-        if (finalizedReport != null) {
-            return ResponseEntity.ok(finalizedReport);
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @PostMapping("/reports/{reportId}/invoice")
-    public ResponseEntity<WorkReport> invoiceWorkReport(@PathVariable UUID reportId) {
-        WorkReport invoicedReport = workReportService.invoiceWorkReport(reportId);
-        if (invoicedReport != null) {
-            return ResponseEntity.ok(invoicedReport);
-        }
-        return ResponseEntity.notFound().build();
+    @PatchMapping("/finalize")
+    public WorkReport finalize(@PathVariable UUID workId) {
+        return workReportService.finalizeByWorkId(workId);
     }
 }

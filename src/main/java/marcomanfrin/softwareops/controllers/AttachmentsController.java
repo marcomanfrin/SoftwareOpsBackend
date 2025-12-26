@@ -39,10 +39,4 @@ public class AttachmentsController {
         attachmentService.deleteAttachment(attachmentId);
         return ResponseEntity.noContent().build();
     }
-
-    @DeleteMapping("/links/{linkId}")
-    public ResponseEntity<Void> unlinkAttachment(@PathVariable UUID linkId) {
-        attachmentService.unlink(linkId);
-        return ResponseEntity.noContent().build();
-    }
 }

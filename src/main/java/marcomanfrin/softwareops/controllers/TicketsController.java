@@ -27,11 +27,13 @@ public class TicketsController {
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 100;
 
-    @Autowired
-    private ITicketService ticketService;
+    private final ITicketService ticketService;
+    private final IWorkService workService;
 
-    @Autowired
-    private IWorkService workService;
+    public TicketsController(ITicketService ticketService, IWorkService workService) {
+        this.ticketService = ticketService;
+        this.workService = workService;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

@@ -10,6 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface WorkReportRepository extends JpaRepository<WorkReport, UUID> {
-    List<WorkReport> findByWork_Id(UUID workId);
+    java.util.Optional<WorkReport> findByWork_Id(UUID workId);
     Optional<WorkReport> findFirstByWork_IdOrderByCreatedAtDesc(UUID workId);
 }
